@@ -5,6 +5,9 @@
 		"factoryName": {
 			"value": "DhanuADF"
 		},
+		"DhanuAzureBlob_connectionString": {
+			"value": ""
+		},
 		"OnPremDhanuSql_connectionString": {
 			"value": "Integrated Security=True;Data Source=DESKTOP-F726TKR\\SQLEXPRESS;Initial Catalog=Movies"
 		},

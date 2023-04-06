@@ -7,6 +7,10 @@
 			"metadata": "Data Factory name",
 			"defaultValue": "DhanuADF"
 		},
+		"DhanuAzureBlob_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'DhanuAzureBlob'"
+		},
 		"OnPremDhanuSql_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'OnPremDhanuSql'",
@@ -46,6 +50,9 @@
 				"parameters": {
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
+					},
+					"DhanuAzureBlob_connectionString": {
+						"value": "[parameters('DhanuAzureBlob_connectionString')]"
 					},
 					"OnPremDhanuSql_connectionString": {
 						"value": "[parameters('OnPremDhanuSql_connectionString')]"
