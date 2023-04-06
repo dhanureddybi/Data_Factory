@@ -1,0 +1,64 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "DhanuADF"
+		},
+		"OnPremDhanuSql_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'OnPremDhanuSql'",
+			"defaultValue": "Integrated Security=True;Data Source=DESKTOP-F726TKR\\SQLEXPRESS;Initial Catalog=Movies"
+		},
+		"OnPremDhanuSql_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'OnPremDhanuSql'"
+		},
+		"OnPremDhanuSql_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "DESKTOP-F726TKR\\PC"
+		},
+		"containerUri": {
+			"type": "string",
+			"metadata": "URI to storage account containing linked ARM templates"
+		},
+		"containerSasToken": {
+			"type": "string",
+			"metadata": "Sas token to storage account containing linked ARM templates"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "DhanuADF_ArmTemplate_0",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2018-02-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_0.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					},
+					"OnPremDhanuSql_connectionString": {
+						"value": "[parameters('OnPremDhanuSql_connectionString')]"
+					},
+					"OnPremDhanuSql_password": {
+						"value": "[parameters('OnPremDhanuSql_password')]"
+					},
+					"OnPremDhanuSql_properties_typeProperties_userName": {
+						"value": "[parameters('OnPremDhanuSql_properties_typeProperties_userName')]"
+					}
+				}
+			},
+			"dependsOn": []
+		}
+	]
+}

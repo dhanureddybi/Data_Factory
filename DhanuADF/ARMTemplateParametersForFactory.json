@@ -1,0 +1,18 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "DhanuADF"
+		},
+		"OnPremDhanuSql_connectionString": {
+			"value": "Integrated Security=True;Data Source=DESKTOP-F726TKR\\SQLEXPRESS;Initial Catalog=Movies"
+		},
+		"OnPremDhanuSql_password": {
+			"value": ""
+		},
+		"OnPremDhanuSql_properties_typeProperties_userName": {
+			"value": "DESKTOP-F726TKR\\PC"
+		}
+	}
+}
