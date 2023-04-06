@@ -269,7 +269,7 @@
 											"type": "DatasetReference",
 											"parameters": {
 												"FileName": {
-													"value": "@concat(item().TABLE_NAME,utcnow(),'.csv')",
+													"value": "@concat(item().TABLE_NAME,'test','.csv')",
 													"type": "Expression"
 												}
 											}
