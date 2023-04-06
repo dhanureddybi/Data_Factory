@@ -1,0 +1,37 @@
+{
+	"name": "OnPrem_to_BlobFlow",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Souce_Movies",
+						"type": "DatasetReference"
+					},
+					"name": "OnPrem"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Des_Movies",
+						"type": "DatasetReference"
+					},
+					"name": "DesBlob"
+				}
+			],
+			"transformations": [],
+			"scriptLines": [
+				"source(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> OnPrem",
+				"OnPrem sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> DesBlob"
+			]
+		}
+	}
+}
