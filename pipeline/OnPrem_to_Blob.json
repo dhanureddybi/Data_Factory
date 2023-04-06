@@ -25,7 +25,7 @@
 						"referenceName": "TablesList",
 						"type": "DatasetReference"
 					},
-					"firstRowOnly": false
+					"firstRowOnly": true
 				}
 			},
 			{
@@ -104,7 +104,7 @@
 									"type": "DatasetReference",
 									"parameters": {
 										"FileName": {
-											"value": "@concat(item().TABLE_NAME,'.csv')",
+											"value": "@concat(item().TABLE_NAME,utcnow(),'.csv')",
 											"type": "Expression"
 										}
 									}
