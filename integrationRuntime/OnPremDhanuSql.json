@@ -1,0 +1,6 @@
+{
+	"name": "OnPremDhanuSql",
+	"properties": {
+		"type": "SelfHosted"
+	}
+}
