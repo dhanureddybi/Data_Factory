@@ -115,11 +115,6 @@
 				}
 			}
 		],
-		"parameters": {
-			"TblName": {
-				"type": "String"
-			}
-		},
 		"annotations": []
 	}
 }
