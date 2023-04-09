@@ -1,0 +1,29 @@
+{
+	"name": "des_emp_BadRows",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureSqlDatabase",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "Prop_0",
+				"type": "nvarchar"
+			},
+			{
+				"name": "Prop_1",
+				"type": "nvarchar"
+			},
+			{
+				"name": "Prop_2",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "emp_badrows"
+		}
+	}
+}
