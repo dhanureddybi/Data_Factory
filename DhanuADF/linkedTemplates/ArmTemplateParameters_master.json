@@ -14,8 +14,17 @@
 		"OnPremDhanuSql_password": {
 			"value": ""
 		},
+		"AzureBlobInputData_connectionString": {
+			"value": ""
+		},
 		"OnPremDhanuSql_properties_typeProperties_userName": {
 			"value": "DESKTOP-F726TKR\\PC"
+		},
+		"AzureSqlKey_properties_typeProperties_baseUrl": {
+			"value": "https://DhanuADFvault.vault.azure.net/"
+		},
+		"AzureSqlDatabase_properties_typeProperties_connectionString_secretName": {
+			"value": "DhanuSQLCon"
 		},
 		"containerUri": {
 			"value": ""
