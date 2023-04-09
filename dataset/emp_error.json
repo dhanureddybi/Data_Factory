@@ -21,12 +21,15 @@
 		},
 		"schema": [
 			{
+				"name": "emp_id",
 				"type": "String"
 			},
 			{
+				"name": "emp_name",
 				"type": "String"
 			},
 			{
+				"name": "join_date",
 				"type": "String"
 			}
 		]
