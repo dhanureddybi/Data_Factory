@@ -7,6 +7,10 @@
 			"metadata": "Data Factory name",
 			"defaultValue": "DhanuADF"
 		},
+		"AzureBlobInputData_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'AzureBlobInputData'"
+		},
 		"DhanuAzureBlob_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'DhanuAzureBlob'"
@@ -20,21 +24,17 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'password' of 'OnPremDhanuSql'"
 		},
-		"AzureBlobInputData_connectionString": {
-			"type": "secureString",
-			"metadata": "Secure string for 'connectionString' of 'AzureBlobInputData'"
-		},
-		"OnPremDhanuSql_properties_typeProperties_userName": {
+		"AzureSqlDatabase_properties_typeProperties_connectionString_secretName": {
 			"type": "string",
-			"defaultValue": "DESKTOP-F726TKR\\PC"
+			"defaultValue": "DhanuSQLCon"
 		},
 		"AzureSqlKey_properties_typeProperties_baseUrl": {
 			"type": "string",
 			"defaultValue": "https://DhanuADFvault.vault.azure.net/"
 		},
-		"AzureSqlDatabase_properties_typeProperties_connectionString_secretName": {
+		"OnPremDhanuSql_properties_typeProperties_userName": {
 			"type": "string",
-			"defaultValue": "DhanuSQLCon"
+			"defaultValue": "DESKTOP-F726TKR\\PC"
 		},
 		"containerUri": {
 			"type": "string",
@@ -63,11 +63,11 @@
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
 					},
-					"DhanuAzureBlob_connectionString": {
-						"value": "[parameters('DhanuAzureBlob_connectionString')]"
-					},
 					"AzureBlobInputData_connectionString": {
 						"value": "[parameters('AzureBlobInputData_connectionString')]"
+					},
+					"DhanuAzureBlob_connectionString": {
+						"value": "[parameters('DhanuAzureBlob_connectionString')]"
 					},
 					"OnPremDhanuSql_connectionString": {
 						"value": "[parameters('OnPremDhanuSql_connectionString')]"
@@ -78,11 +78,11 @@
 					"AzureSqlKey_properties_typeProperties_baseUrl": {
 						"value": "[parameters('AzureSqlKey_properties_typeProperties_baseUrl')]"
 					},
-					"OnPremDhanuSql_properties_typeProperties_userName": {
-						"value": "[parameters('OnPremDhanuSql_properties_typeProperties_userName')]"
-					},
 					"AzureSqlDatabase_properties_typeProperties_connectionString_secretName": {
 						"value": "[parameters('AzureSqlDatabase_properties_typeProperties_connectionString_secretName')]"
+					},
+					"OnPremDhanuSql_properties_typeProperties_userName": {
+						"value": "[parameters('OnPremDhanuSql_properties_typeProperties_userName')]"
 					}
 				}
 			},

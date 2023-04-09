@@ -5,6 +5,9 @@
 		"factoryName": {
 			"value": "DhanuADF"
 		},
+		"AzureBlobInputData_connectionString": {
+			"value": ""
+		},
 		"DhanuAzureBlob_connectionString": {
 			"value": ""
 		},
@@ -14,17 +17,14 @@
 		"OnPremDhanuSql_password": {
 			"value": ""
 		},
-		"AzureBlobInputData_connectionString": {
-			"value": ""
-		},
-		"OnPremDhanuSql_properties_typeProperties_userName": {
-			"value": "DESKTOP-F726TKR\\PC"
+		"AzureSqlDatabase_properties_typeProperties_connectionString_secretName": {
+			"value": "DhanuSQLCon"
 		},
 		"AzureSqlKey_properties_typeProperties_baseUrl": {
 			"value": "https://DhanuADFvault.vault.azure.net/"
 		},
-		"AzureSqlDatabase_properties_typeProperties_connectionString_secretName": {
-			"value": "DhanuSQLCon"
+		"OnPremDhanuSql_properties_typeProperties_userName": {
+			"value": "DESKTOP-F726TKR\\PC"
 		}
 	}
 }

@@ -7,13 +7,13 @@
 			"metadata": "Data Factory name",
 			"defaultValue": "DhanuADF"
 		},
-		"DhanuAzureBlob_connectionString": {
-			"type": "secureString",
-			"metadata": "Secure string for 'connectionString' of 'DhanuAzureBlob'"
-		},
 		"AzureBlobInputData_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'AzureBlobInputData'"
+		},
+		"DhanuAzureBlob_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'DhanuAzureBlob'"
 		},
 		"OnPremDhanuSql_connectionString": {
 			"type": "secureString",
@@ -28,19 +28,45 @@
 			"type": "string",
 			"defaultValue": "https://DhanuADFvault.vault.azure.net/"
 		},
-		"OnPremDhanuSql_properties_typeProperties_userName": {
-			"type": "string",
-			"defaultValue": "DESKTOP-F726TKR\\PC"
-		},
 		"AzureSqlDatabase_properties_typeProperties_connectionString_secretName": {
 			"type": "string",
 			"defaultValue": "DhanuSQLCon"
+		},
+		"OnPremDhanuSql_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "DESKTOP-F726TKR\\PC"
 		}
 	},
 	"variables": {
 		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
 	},
 	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureBlobInputData')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobStorage",
+				"typeProperties": {
+					"connectionString": "[parameters('AzureBlobInputData_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureSqlKey')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureKeyVault",
+				"typeProperties": {
+					"baseUrl": "[parameters('AzureSqlKey_properties_typeProperties_baseUrl')]"
+				}
+			},
+			"dependsOn": []
+		},
 		{
 			"name": "[concat(parameters('factoryName'), '/DhanuAzureBlob')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
@@ -61,32 +87,6 @@
 			"properties": {
 				"type": "SelfHosted",
 				"typeProperties": {}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/AzureSqlKey')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "AzureKeyVault",
-				"typeProperties": {
-					"baseUrl": "[parameters('AzureSqlKey_properties_typeProperties_baseUrl')]"
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/AzureBlobInputData')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "AzureBlobStorage",
-				"typeProperties": {
-					"connectionString": "[parameters('AzureBlobInputData_connectionString')]"
-				}
 			},
 			"dependsOn": []
 		},
@@ -128,27 +128,45 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/OnPremDhanuSql')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"name": "[concat(parameters('factoryName'), '/emp_error')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
-				"annotations": [],
-				"type": "SqlServer",
-				"typeProperties": {
-					"connectionString": "[parameters('OnPremDhanuSql_connectionString')]",
-					"userName": "[parameters('OnPremDhanuSql_properties_typeProperties_userName')]",
-					"password": {
-						"type": "SecureString",
-						"value": "[parameters('OnPremDhanuSql_password')]"
-					}
+				"linkedServiceName": {
+					"referenceName": "AzureBlobInputData",
+					"type": "LinkedServiceReference"
 				},
-				"connectVia": {
-					"referenceName": "OnPremDhanuSql",
-					"type": "IntegrationRuntimeReference"
-				}
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "emp_error.csv",
+						"folderPath": "input/source_data",
+						"container": "adfdemo"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "emp_id",
+						"type": "String"
+					},
+					{
+						"name": "emp_name",
+						"type": "String"
+					},
+					{
+						"name": "join_date",
+						"type": "String"
+					}
+				]
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/integrationRuntimes/OnPremDhanuSql')]"
+				"[concat(variables('factoryId'), '/linkedServices/AzureBlobInputData')]"
 			]
 		},
 		{
@@ -175,41 +193,27 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/emp_error')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
+			"name": "[concat(parameters('factoryName'), '/OnPremDhanuSql')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
 			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureBlobInputData",
-					"type": "LinkedServiceReference"
-				},
 				"annotations": [],
-				"type": "DelimitedText",
+				"type": "SqlServer",
 				"typeProperties": {
-					"location": {
-						"type": "AzureBlobStorageLocation",
-						"fileName": "emp_error.csv",
-						"folderPath": "input/source_data",
-						"container": "adfdemo"
-					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"quoteChar": "\""
-				},
-				"schema": [
-					{
-						"type": "String"
-					},
-					{
-						"type": "String"
-					},
-					{
-						"type": "String"
+					"connectionString": "[parameters('OnPremDhanuSql_connectionString')]",
+					"userName": "[parameters('OnPremDhanuSql_properties_typeProperties_userName')]",
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('OnPremDhanuSql_password')]"
 					}
-				]
+				},
+				"connectVia": {
+					"referenceName": "OnPremDhanuSql",
+					"type": "IntegrationRuntimeReference"
+				}
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureBlobInputData')]"
+				"[concat(variables('factoryId'), '/integrationRuntimes/OnPremDhanuSql')]"
 			]
 		},
 		{
@@ -270,7 +274,20 @@
 				},
 				"annotations": [],
 				"type": "AzureSqlTable",
-				"schema": [],
+				"schema": [
+					{
+						"name": "Prop_0",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Prop_1",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Prop_2",
+						"type": "nvarchar"
+					}
+				],
 				"typeProperties": {
 					"schema": "dbo",
 					"table": "emp_error"
@@ -415,13 +432,82 @@
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/HandleErrorRows')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "emp_error",
+								"type": "DatasetReference"
+							},
+							"name": "errorrows"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "des_emp_errorRows",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "select1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          emp_id as integer,",
+						"          emp_name as string,",
+						"          join_date as date 'yyyy-MM-dd'",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> errorrows",
+						"errorrows select(mapColumn(",
+						"          emp_id,",
+						"          emp_name,",
+						"          join_date",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select1",
+						"select1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          Prop_0 as string,",
+						"          Prop_1 as string,",
+						"          Prop_2 as string",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/emp_error')]",
+				"[concat(variables('factoryId'), '/datasets/des_emp_errorRows')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/HandleErrorRows')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"activities": [
 					{
-						"name": "Copy data1",
-						"type": "Copy",
+						"name": "HandleErrorRows",
+						"type": "ExecuteDataFlow",
 						"dependsOn": [],
 						"policy": {
 							"timeout": "0.12:00:00",
@@ -432,49 +518,22 @@
 						},
 						"userProperties": [],
 						"typeProperties": {
-							"source": {
-								"type": "DelimitedTextSource",
-								"storeSettings": {
-									"type": "AzureBlobStorageReadSettings",
-									"recursive": true,
-									"enablePartitionDiscovery": false
-								},
-								"formatSettings": {
-									"type": "DelimitedTextReadSettings"
+							"dataflow": {
+								"referenceName": "HandleErrorRows",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"errorrows": {},
+									"sink1": {}
 								}
 							},
-							"sink": {
-								"type": "AzureSqlSink",
-								"writeBehavior": "insert",
-								"sqlWriterUseTableLock": false,
-								"tableOption": "autoCreate",
-								"disableMetricsCollection": false
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
 							},
-							"enableStaging": false,
-							"dataIntegrationUnits": 2,
-							"translator": {
-								"type": "TabularTranslator",
-								"typeConversion": true,
-								"typeConversionSettings": {
-									"allowDataTruncation": true,
-									"treatBooleanAsNumber": false
-								}
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "emp_error",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "des_emp_errorRows",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						]
+							"traceLevel": "Fine"
+						}
 					}
 				],
 				"policy": {
@@ -484,8 +543,7 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/des_emp_errorRows')]",
-				"[concat(variables('factoryId'), '/datasets/emp_error')]"
+				"[concat(variables('factoryId'), '/dataflows/HandleErrorRows')]"
 			]
 		}
 	]
