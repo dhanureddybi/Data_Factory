@@ -66,7 +66,8 @@
 								"parameters": {},
 								"datasetParameters": {
 									"errorrows": {},
-									"sink1": {}
+									"GoodRows": {},
+									"badRows": {}
 								}
 							},
 							"staging": {},
@@ -499,12 +500,19 @@
 								"referenceName": "des_emp_errorRows",
 								"type": "DatasetReference"
 							},
-							"name": "sink1"
+							"name": "GoodRows"
+						},
+						{
+							"dataset": {
+								"referenceName": "des_emp_BadRows",
+								"type": "DatasetReference"
+							},
+							"name": "badRows"
 						}
 					],
 					"transformations": [
 						{
-							"name": "select1"
+							"name": "split1"
 						}
 					],
 					"scriptLines": [
@@ -516,14 +524,9 @@
 						"     allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     ignoreNoFilesFound: false) ~> errorrows",
-						"errorrows select(mapColumn(",
-						"          emp_id,",
-						"          emp_name,",
-						"          join_date",
-						"     ),",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> select1",
-						"select1 sink(allowSchemaDrift: true,",
+						"errorrows split(isNull(join_date),",
+						"     disjoint: false) ~> split1@(BadRows, GoodRows)",
+						"split1@BadRows sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     input(",
 						"          Prop_0 as string,",
@@ -537,13 +540,63 @@
 						"     format: 'table',",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
-						"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
+						"     errorHandlingOption: 'stopOnFirstError') ~> GoodRows",
+						"split1@GoodRows sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          Prop_0 as string,",
+						"          Prop_1 as string,",
+						"          Prop_2 as string",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError') ~> badRows"
 					]
 				}
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/emp_error')]",
-				"[concat(variables('factoryId'), '/datasets/des_emp_errorRows')]"
+				"[concat(variables('factoryId'), '/datasets/des_emp_errorRows')]",
+				"[concat(variables('factoryId'), '/datasets/des_emp_BadRows')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/des_emp_BadRows')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDatabase",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "Prop_0",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Prop_1",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Prop_2",
+						"type": "nvarchar"
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "emp_badrows"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabase')]"
 			]
 		}
 	]
