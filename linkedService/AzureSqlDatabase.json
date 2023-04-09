@@ -1,0 +1,18 @@
+{
+	"name": "AzureSqlDatabase",
+	"properties": {
+		"annotations": [],
+		"type": "AzureSqlDatabase",
+		"typeProperties": {
+			"connectionString": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "AzureSqlKey",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "DhanuSQLCon",
+				"secretVersion": "42935383dbe24d2cbf0a7e894009da2f"
+			}
+		}
+	}
+}
