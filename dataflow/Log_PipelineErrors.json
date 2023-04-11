@@ -41,7 +41,7 @@
 				"source(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false) ~> LogFile",
-				"LogFile derive(ADF_name = $ADF_name,",
+				"LogFile derive(ADF_name = $ADF_Name,",
 				"          PipeLineName = $PipeLineName,",
 				"          Status = $Status,",
 				"          RunId = $RunId,",
