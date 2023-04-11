@@ -25,6 +25,32 @@
 					"dataflow": {
 						"referenceName": "Log_PipelineErrors",
 						"type": "DataFlowReference",
+						"parameters": {
+							"ADF_name": {
+								"value": "'@{pipeline().DataFactory}'",
+								"type": "Expression"
+							},
+							"PipeLineName": {
+								"value": "'@{pipeline().Pipeline}'",
+								"type": "Expression"
+							},
+							"Status": {
+								"value": "'@{string('succes')}'",
+								"type": "Expression"
+							},
+							"RunId": {
+								"value": "'@{pipeline().RunId}'",
+								"type": "Expression"
+							},
+							"TriggerName": {
+								"value": "'@{pipeline().TriggerName}'",
+								"type": "Expression"
+							},
+							"LogFileName": {
+								"value": "'@{concat(formatDateTime(utcnow(),'yyyy-mm-dd'),'_log.csv')}'",
+								"type": "Expression"
+							}
+						},
 						"datasetParameters": {
 							"DesLogFile": {
 								"Log_File_Name": {
