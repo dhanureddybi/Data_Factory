@@ -1,0 +1,20 @@
+{
+	"name": "Log_PipelineErrors",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [],
+			"sinks": [],
+			"transformations": [],
+			"scriptLines": [
+				"parameters{",
+				"     ADF_name as string,",
+				"     PipeLineName as string,",
+				"     Status as string,",
+				"     RunId as string,",
+				"     TriggerName as string",
+				"}"
+			]
+		}
+	}
+}
