@@ -206,6 +206,34 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/log')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "DhanuAzureBlob",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "Blank.csv",
+						"folderPath": "input/source_data",
+						"container": "adfdemo"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/DhanuAzureBlob')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/AzureSqlDatabase')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -250,34 +278,6 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/integrationRuntimes/OnPremDhanuSql')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/log')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "DhanuAzureBlob",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "DelimitedText",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobStorageLocation",
-						"fileName": "Blank.csv",
-						"folderPath": "input/source_data",
-						"container": "adfdemo"
-					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"quoteChar": "\""
-				},
-				"schema": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/DhanuAzureBlob')]"
 			]
 		},
 		{
@@ -430,17 +430,17 @@
 					],
 					"scriptLines": [
 						"parameters{",
-						"     ADF_name as string,",
+						"     ADF_Name as string,",
 						"     PipeLineName as string,",
 						"     Status as string,",
 						"     RunId as string,",
 						"     TriggerName as string,",
-						"     LogFileName as string",
+						"     Log_File_Name as string",
 						"}",
 						"source(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     ignoreNoFilesFound: false) ~> LogFile",
-						"LogFile derive(ADF_name = $ADF_name,",
+						"LogFile derive(ADF_name = $ADF_Name,",
 						"          PipeLineName = $PipeLineName,",
 						"          Status = $Status,",
 						"          RunId = $RunId,",
@@ -457,7 +457,7 @@
 						"     skipDuplicateMapOutputs: true) ~> SelectColumns",
 						"SelectColumns sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
-						"     partitionFileNames:[($LogFileName)],",
+						"     partitionFileNames:[($Log_File_Name)],",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
 						"     partitionBy('hash', 1)) ~> DesLogFile"
@@ -480,7 +480,7 @@
 						"type": "ExecuteDataFlow",
 						"dependsOn": [
 							{
-								"activity": "Wait1",
+								"activity": "Set File Name",
 								"dependencyConditions": [
 									"Succeeded"
 								]
@@ -499,7 +499,7 @@
 								"referenceName": "Log_PipelineErrors",
 								"type": "DataFlowReference",
 								"parameters": {
-									"ADF_name": {
+									"ADF_Name": {
 										"value": "'@{pipeline().DataFactory}'",
 										"type": "Expression"
 									},
@@ -508,7 +508,7 @@
 										"type": "Expression"
 									},
 									"Status": {
-										"value": "'@{string('succes')}'",
+										"value": "'@{string('Succes')}'",
 										"type": "Expression"
 									},
 									"RunId": {
@@ -519,8 +519,8 @@
 										"value": "'@{pipeline().TriggerName}'",
 										"type": "Expression"
 									},
-									"LogFileName": {
-										"value": "'@{concat(formatDateTime(utcnow(),'yyyy-mm-dd'),'_log.csv')}'",
+									"Log_File_Name": {
+										"value": "'@{variables('Log_File_Name')}'",
 										"type": "Expression"
 									}
 								},
@@ -528,7 +528,7 @@
 									"LogFile": {},
 									"DesLogFile": {
 										"Log_File_Name": {
-											"value": "@pipeline().parameters.Log_File_Name",
+											"value": "@concat(formatDateTime(utcnow(),'yyyy-mm-dd'),'_Log.csv')",
 											"type": "Expression"
 										}
 									}
@@ -550,15 +550,35 @@
 						"typeProperties": {
 							"waitTimeInSeconds": 1
 						}
+					},
+					{
+						"name": "Set File Name",
+						"type": "SetVariable",
+						"dependsOn": [
+							{
+								"activity": "Wait1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "Log_File_Name",
+							"value": {
+								"value": "@concat(formatDateTime(utcnow(),'yyyy-mm-dd'),'_Log.csv')",
+								"type": "Expression"
+							}
+						}
 					}
 				],
 				"policy": {
 					"elapsedTimeMetric": {},
 					"cancelAfter": {}
 				},
-				"parameters": {
+				"variables": {
 					"Log_File_Name": {
-						"type": "string"
+						"type": "String"
 					}
 				},
 				"annotations": []
