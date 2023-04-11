@@ -7,7 +7,7 @@
 				"type": "ExecuteDataFlow",
 				"dependsOn": [
 					{
-						"activity": "Set variable1",
+						"activity": "Set File Name",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -77,7 +77,7 @@
 				}
 			},
 			{
-				"name": "Set variable1",
+				"name": "Set File Name",
 				"type": "SetVariable",
 				"dependsOn": [
 					{
