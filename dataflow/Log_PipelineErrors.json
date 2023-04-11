@@ -5,6 +5,10 @@
 		"typeProperties": {
 			"sources": [
 				{
+					"dataset": {
+						"referenceName": "log",
+						"type": "DatasetReference"
+					},
 					"name": "LogFile"
 				}
 			],
@@ -35,7 +39,8 @@
 				"     LogFileName as string",
 				"}",
 				"source(allowSchemaDrift: true,",
-				"     validateSchema: false) ~> LogFile",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> LogFile",
 				"LogFile derive(ADF_name = $ADF_name,",
 				"          PipeLineName = $PipeLineName,",
 				"          Status = $Status,",
