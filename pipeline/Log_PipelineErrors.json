@@ -1,0 +1,61 @@
+{
+	"name": "Log_PipelineErrors",
+	"properties": {
+		"activities": [
+			{
+				"name": "Log_PipelineErrors",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "Wait1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "Log_PipelineErrors",
+						"type": "DataFlowReference",
+						"datasetParameters": {
+							"DesLogFile": {
+								"Log_File_Name": {
+									"value": "@pipeline().parameters.Log_File_Name",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "Wait1",
+				"type": "Wait",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"waitTimeInSeconds": 1
+				}
+			}
+		],
+		"parameters": {
+			"Log_File_Name": {
+				"type": "string"
+			}
+		},
+		"annotations": []
+	}
+}

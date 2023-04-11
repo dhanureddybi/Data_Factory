@@ -3,17 +3,60 @@
 	"properties": {
 		"type": "MappingDataFlow",
 		"typeProperties": {
-			"sources": [],
-			"sinks": [],
-			"transformations": [],
+			"sources": [
+				{
+					"name": "LogFile"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Des_logFile",
+						"type": "DatasetReference"
+					},
+					"name": "DesLogFile"
+				}
+			],
+			"transformations": [
+				{
+					"name": "AddColumns"
+				},
+				{
+					"name": "SelectColumns"
+				}
+			],
 			"scriptLines": [
 				"parameters{",
 				"     ADF_name as string,",
 				"     PipeLineName as string,",
 				"     Status as string,",
 				"     RunId as string,",
-				"     TriggerName as string",
-				"}"
+				"     TriggerName as string,",
+				"     LogFileName as string",
+				"}",
+				"source(allowSchemaDrift: true,",
+				"     validateSchema: false) ~> LogFile",
+				"LogFile derive(ADF_name = $ADF_name,",
+				"          PipeLineName = $PipeLineName,",
+				"          Status = $Status,",
+				"          RunId = $RunId,",
+				"          TriggerName = $TriggerName,",
+				"     partitionBy('hash', 1)) ~> AddColumns",
+				"AddColumns select(mapColumn(",
+				"          ADF_name,",
+				"          PipeLineName,",
+				"          Status,",
+				"          RunId,",
+				"          TriggerName",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> SelectColumns",
+				"SelectColumns sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     partitionFileNames:[($LogFileName)],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> DesLogFile"
 			]
 		}
 	}
