@@ -90,6 +90,104 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/Log_PipelineErrors')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Log_PipelineErrors",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "Wait1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "Log_PipelineErrors",
+								"type": "DataFlowReference",
+								"parameters": {
+									"ADF_name": {
+										"value": "'@{pipeline().DataFactory}'",
+										"type": "Expression"
+									},
+									"PipeLineName": {
+										"value": "'@{pipeline().Pipeline}'",
+										"type": "Expression"
+									},
+									"Status": {
+										"value": "'@{string('succes')}'",
+										"type": "Expression"
+									},
+									"RunId": {
+										"value": "'@{pipeline().RunId}'",
+										"type": "Expression"
+									},
+									"TriggerName": {
+										"value": "'@{pipeline().TriggerName}'",
+										"type": "Expression"
+									},
+									"LogFileName": {
+										"value": "'@{concat(formatDateTime(utcnow(),'yyyy-mm-dd'),'_log.csv')}'",
+										"type": "Expression"
+									}
+								},
+								"datasetParameters": {
+									"LogFile": {},
+									"DesLogFile": {
+										"Log_File_Name": {
+											"value": "@pipeline().parameters.Log_File_Name",
+											"type": "Expression"
+										}
+									}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "Wait1",
+						"type": "Wait",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"waitTimeInSeconds": 1
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"parameters": {
+					"Log_File_Name": {
+						"type": "string"
+					}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/Log_PipelineErrors')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/OnPrem_to_Blob')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -260,6 +358,42 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/Des_logFile')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "DhanuAzureBlob",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"Log_File_Name": {
+						"type": "String"
+					}
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": {
+							"value": "@dataset().Log_File_Name",
+							"type": "Expression"
+						},
+						"folderPath": "log",
+						"container": "adfdemo"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/DhanuAzureBlob')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/Souce_Movies')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -304,6 +438,40 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/OnPremDhanuSql')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/des_emp_BadRows')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDatabase",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "Prop_0",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Prop_1",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Prop_2",
+						"type": "nvarchar"
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "emp_badrows"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabase')]"
 			]
 		},
 		{
@@ -566,37 +734,105 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/des_emp_BadRows')]",
+			"name": "[concat(parameters('factoryName'), '/Log_PipelineErrors')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "log",
+								"type": "DatasetReference"
+							},
+							"name": "LogFile"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "Des_logFile",
+								"type": "DatasetReference"
+							},
+							"name": "DesLogFile"
+						}
+					],
+					"transformations": [
+						{
+							"name": "AddColumns"
+						},
+						{
+							"name": "SelectColumns"
+						}
+					],
+					"scriptLines": [
+						"parameters{",
+						"     ADF_name as string,",
+						"     PipeLineName as string,",
+						"     Status as string,",
+						"     RunId as string,",
+						"     TriggerName as string,",
+						"     LogFileName as string",
+						"}",
+						"source(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> LogFile",
+						"LogFile derive(ADF_name = $ADF_name,",
+						"          PipeLineName = $PipeLineName,",
+						"          Status = $Status,",
+						"          RunId = $RunId,",
+						"          TriggerName = $TriggerName,",
+						"     partitionBy('hash', 1)) ~> AddColumns",
+						"AddColumns select(mapColumn(",
+						"          ADF_name,",
+						"          PipeLineName,",
+						"          Status,",
+						"          RunId,",
+						"          TriggerName",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> SelectColumns",
+						"SelectColumns sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     partitionFileNames:[($LogFileName)],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 1)) ~> DesLogFile"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/log')]",
+				"[concat(variables('factoryId'), '/datasets/Des_logFile')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/log')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"linkedServiceName": {
-					"referenceName": "AzureSqlDatabase",
+					"referenceName": "DhanuAzureBlob",
 					"type": "LinkedServiceReference"
 				},
 				"annotations": [],
-				"type": "AzureSqlTable",
-				"schema": [
-					{
-						"name": "Prop_0",
-						"type": "nvarchar"
-					},
-					{
-						"name": "Prop_1",
-						"type": "nvarchar"
-					},
-					{
-						"name": "Prop_2",
-						"type": "nvarchar"
-					}
-				],
+				"type": "DelimitedText",
 				"typeProperties": {
-					"schema": "dbo",
-					"table": "emp_badrows"
-				}
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "Blank.csv",
+						"folderPath": "input/source_data",
+						"container": "adfdemo"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"quoteChar": "\""
+				},
+				"schema": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabase')]"
+				"[concat(variables('factoryId'), '/linkedServices/DhanuAzureBlob')]"
 			]
 		}
 	]
