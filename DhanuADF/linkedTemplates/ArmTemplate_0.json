@@ -414,9 +414,6 @@
 					"transformations": [
 						{
 							"name": "AddColumns"
-						},
-						{
-							"name": "SelectColumns"
 						}
 					],
 					"scriptLines": [
@@ -431,28 +428,18 @@
 						"source(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     ignoreNoFilesFound: false) ~> LogFile",
-						"LogFile derive(ADF_name = $ADF_Name,",
+						"LogFile derive(ADF_Name = $ADF_Name,",
 						"          PipeLineName = $PipeLineName,",
 						"          Status = $Status,",
 						"          RunId = $RunId,",
-						"          TriggerName = $TriggerName,",
-						"     partitionBy('hash', 1)) ~> AddColumns",
-						"AddColumns select(mapColumn(",
-						"          ADF_name,",
-						"          PipeLineName,",
-						"          Status,",
-						"          RunId,",
-						"          TriggerName",
-						"     ),",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> SelectColumns",
-						"SelectColumns sink(allowSchemaDrift: true,",
+						"          TriggerName = $TriggerName) ~> AddColumns",
+						"AddColumns sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     partitionFileNames:[($Log_File_Name)],",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
 						"     mapColumn(",
-						"          ADF_name,",
+						"          ADF_name = ADF_Name,",
 						"          PipeLineName,",
 						"          Status,",
 						"          RunId,",
