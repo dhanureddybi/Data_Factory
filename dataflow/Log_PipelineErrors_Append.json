@@ -13,7 +13,7 @@
 				},
 				{
 					"dataset": {
-						"referenceName": "Des_logFile",
+						"referenceName": "SourceForUnion",
 						"type": "DatasetReference"
 					},
 					"name": "ExistingFile"
