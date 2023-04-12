@@ -61,6 +61,13 @@
 				"     partitionFileNames:[($Log_File_Name)],",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
+				"     mapColumn(",
+				"          ADF_name,",
+				"          PipeLineName,",
+				"          Status,",
+				"          RunId,",
+				"          TriggerName",
+				"     ),",
 				"     partitionBy('hash', 1)) ~> DesLogFile"
 			]
 		}

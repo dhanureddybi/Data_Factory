@@ -50,14 +50,6 @@
 								"value": "'@{variables('Log_File_Name')}'",
 								"type": "Expression"
 							}
-						},
-						"datasetParameters": {
-							"DesLogFile": {
-								"Log_File_Name": {
-									"value": "@concat(formatDateTime(utcnow(),'yyyy-mm-dd'),'_Log.csv')",
-									"type": "Expression"
-								}
-							}
 						}
 					},
 					"compute": {
