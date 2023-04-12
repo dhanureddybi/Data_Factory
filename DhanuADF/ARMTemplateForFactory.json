@@ -96,68 +96,6 @@
 			"properties": {
 				"activities": [
 					{
-						"name": "Log_PipelineErrors",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [
-							{
-								"activity": "Set File Name",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "Log_PipelineErrors",
-								"type": "DataFlowReference",
-								"parameters": {
-									"ADF_Name": {
-										"value": "'@{pipeline().DataFactory}'",
-										"type": "Expression"
-									},
-									"PipeLineName": {
-										"value": "'@{pipeline().Pipeline}'",
-										"type": "Expression"
-									},
-									"Status": {
-										"value": "'@{string('Succes')}'",
-										"type": "Expression"
-									},
-									"RunId": {
-										"value": "'@{pipeline().RunId}'",
-										"type": "Expression"
-									},
-									"TriggerName": {
-										"value": "'@{pipeline().TriggerName}'",
-										"type": "Expression"
-									},
-									"Log_File_Name": {
-										"value": "'@{variables('Log_File_Name')}'",
-										"type": "Expression"
-									}
-								},
-								"datasetParameters": {
-									"LogFile": {},
-									"DesLogFile": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					},
-					{
 						"name": "Wait1",
 						"type": "Wait",
 						"dependsOn": [],
@@ -185,6 +123,216 @@
 								"type": "Expression"
 							}
 						}
+					},
+					{
+						"name": "CheckIfFileExists",
+						"type": "GetMetadata",
+						"dependsOn": [
+							{
+								"activity": "Set File Name",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "SourceForUnion",
+								"type": "DatasetReference",
+								"parameters": {
+									"sou_File_name": {
+										"value": "@variables('Log_File_Name')",
+										"type": "Expression"
+									}
+								}
+							},
+							"fieldList": [
+								"exists"
+							],
+							"storeSettings": {
+								"type": "AzureBlobStorageReadSettings",
+								"enablePartitionDiscovery": false
+							},
+							"formatSettings": {
+								"type": "DelimitedTextReadSettings"
+							}
+						}
+					},
+					{
+						"name": "If Condition1",
+						"type": "IfCondition",
+						"dependsOn": [
+							{
+								"activity": "CheckIfFileExists",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"expression": {
+								"value": "@activity('CheckIfFileExists').output.exists",
+								"type": "Expression"
+							},
+							"ifFalseActivities": [
+								{
+									"name": "Log_PipelineErrors",
+									"type": "ExecuteDataFlow",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"dataflow": {
+											"referenceName": "Log_PipelineErrors",
+											"type": "DataFlowReference",
+											"parameters": {
+												"ADF_Name": {
+													"value": "'@{pipeline().DataFactory}'",
+													"type": "Expression"
+												},
+												"PipeLineName": {
+													"value": "'@{pipeline().Pipeline}'",
+													"type": "Expression"
+												},
+												"Status": {
+													"value": "'@{string('Done')}'",
+													"type": "Expression"
+												},
+												"RunId": {
+													"value": "'@{pipeline().RunId}'",
+													"type": "Expression"
+												},
+												"TriggerName": {
+													"value": "'@{pipeline().TriggerName}'",
+													"type": "Expression"
+												},
+												"Log_File_Name": {
+													"value": "'@{variables('Log_File_Name')}'",
+													"type": "Expression"
+												}
+											},
+											"datasetParameters": {
+												"LogFile": {},
+												"DesLogFile": {
+													"des_file_name": {
+														"value": "@variables('Log_File_Name')",
+														"type": "Expression"
+													}
+												}
+											},
+											"linkedServiceParameters": {}
+										},
+										"staging": {},
+										"compute": {
+											"coreCount": 8,
+											"computeType": "General"
+										},
+										"traceLevel": "Fine"
+									}
+								}
+							],
+							"ifTrueActivities": [
+								{
+									"name": "Log_PipelineErrors_Append",
+									"type": "ExecuteDataFlow",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"dataflow": {
+											"referenceName": "Log_PipelineErrors_Append",
+											"type": "DataFlowReference",
+											"parameters": {
+												"ADF_Name": {
+													"value": "'@{pipeline().DataFactory}'",
+													"type": "Expression"
+												},
+												"PipeLineName": {
+													"value": "'@{pipeline().Pipeline}'",
+													"type": "Expression"
+												},
+												"Status": {
+													"value": "'@{string('Done')}'",
+													"type": "Expression"
+												},
+												"RunId": {
+													"value": "'@{pipeline().RunId}'",
+													"type": "Expression"
+												},
+												"TriggerName": {
+													"value": "'@{pipeline().TriggerName}'",
+													"type": "Expression"
+												},
+												"Log_File_Name": {
+													"value": "'@{variables('Log_File_Name')}'",
+													"type": "Expression"
+												}
+											},
+											"datasetParameters": {
+												"LogFile": {},
+												"ExistingFile": {
+													"sou_File_name": {
+														"value": "@variables('Log_File_Name')",
+														"type": "Expression"
+													}
+												},
+												"DesLogFile": {
+													"des_file_name": {
+														"value": "@variables('Log_File_Name')",
+														"type": "Expression"
+													}
+												}
+											},
+											"linkedServiceParameters": {
+												"ExistingFile": {
+													"schemaLinkedService": {
+														"sou_File_name": {
+															"value": "@variables('Log_File_Name')",
+															"type": "Expression"
+														}
+													}
+												},
+												"DesLogFile": {
+													"schemaLinkedService": {
+														"des_file_name": {
+															"value": "@variables('Log_File_Name')",
+															"type": "Expression"
+														}
+													}
+												}
+											}
+										},
+										"staging": {},
+										"compute": {
+											"coreCount": 8,
+											"computeType": "General"
+										},
+										"traceLevel": "Fine"
+									}
+								}
+							]
+						}
 					}
 				],
 				"policy": {
@@ -199,6 +347,8 @@
 				"annotations": []
 			},
 			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/SourceForUnion')]",
+				"[concat(variables('factoryId'), '/dataflows/Log_PipelineErrors_Append')]",
 				"[concat(variables('factoryId'), '/dataflows/Log_PipelineErrors')]"
 			]
 		},
@@ -381,16 +531,26 @@
 					"referenceName": "DhanuAzureBlob",
 					"type": "LinkedServiceReference"
 				},
+				"parameters": {
+					"des_file_name": {
+						"type": "string"
+					}
+				},
 				"annotations": [],
 				"type": "DelimitedText",
 				"typeProperties": {
 					"location": {
 						"type": "AzureBlobStorageLocation",
+						"fileName": {
+							"value": "@dataset().des_file_name",
+							"type": "Expression"
+						},
 						"folderPath": "log",
 						"container": "adfdemo"
 					},
 					"columnDelimiter": ",",
 					"escapeChar": "\\",
+					"firstRowAsHeader": true,
 					"quoteChar": "\""
 				},
 				"schema": []
@@ -833,6 +993,126 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/log')]",
 				"[concat(variables('factoryId'), '/datasets/Des_logFile')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Log_PipelineErrors_Append')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "log",
+								"type": "DatasetReference"
+							},
+							"name": "LogFile"
+						},
+						{
+							"dataset": {
+								"referenceName": "SourceForUnion",
+								"type": "DatasetReference"
+							},
+							"name": "ExistingFile"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "Des_logFile",
+								"type": "DatasetReference"
+							},
+							"name": "DesLogFile"
+						}
+					],
+					"transformations": [
+						{
+							"name": "AddColumns"
+						},
+						{
+							"name": "union1"
+						}
+					],
+					"scriptLines": [
+						"parameters{",
+						"     ADF_Name as string,",
+						"     PipeLineName as string,",
+						"     Status as string,",
+						"     RunId as string,",
+						"     TriggerName as string,",
+						"     Log_File_Name as string",
+						"}",
+						"source(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> LogFile",
+						"source(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     wildcardPaths:[($Log_File_Name)]) ~> ExistingFile",
+						"LogFile derive(ADF_Name = $ADF_Name,",
+						"          PipeLineName = $PipeLineName,",
+						"          Status = $Status,",
+						"          RunId = $RunId,",
+						"          TriggerName = $TriggerName) ~> AddColumns",
+						"AddColumns, ExistingFile union(byName: true)~> union1",
+						"union1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     partitionFileNames:[($Log_File_Name)],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     mapColumn(",
+						"          ADF_name = ADF_Name,",
+						"          PipeLineName,",
+						"          Status,",
+						"          RunId,",
+						"          TriggerName",
+						"     ),",
+						"     partitionBy('hash', 1)) ~> DesLogFile"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/log')]",
+				"[concat(variables('factoryId'), '/datasets/SourceForUnion')]",
+				"[concat(variables('factoryId'), '/datasets/Des_logFile')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SourceForUnion')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "DhanuAzureBlob",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"sou_File_name": {
+						"type": "String"
+					}
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": {
+							"value": "@dataset().sou_File_name",
+							"type": "Expression"
+						},
+						"folderPath": "log",
+						"container": "adfdemo"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/DhanuAzureBlob')]"
 			]
 		}
 	]
