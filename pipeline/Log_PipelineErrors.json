@@ -206,24 +206,6 @@
 												"type": "Expression"
 											}
 										}
-									},
-									"linkedServiceParameters": {
-										"ExistingFile": {
-											"schemaLinkedService": {
-												"sou_File_name": {
-													"value": "@variables('Log_File_Name')",
-													"type": "Expression"
-												}
-											}
-										},
-										"DesLogFile": {
-											"schemaLinkedService": {
-												"des_file_name": {
-													"value": "@variables('Log_File_Name')",
-													"type": "Expression"
-												}
-											}
-										}
 									}
 								},
 								"compute": {
