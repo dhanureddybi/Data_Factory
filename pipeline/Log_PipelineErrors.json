@@ -52,8 +52,14 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataset": {
-						"referenceName": "Des_logFile",
-						"type": "DatasetReference"
+						"referenceName": "SourceForUnion",
+						"type": "DatasetReference",
+						"parameters": {
+							"sou_File_name": {
+								"value": "@variables('Log_File_Name')",
+								"type": "Expression"
+							}
+						}
 					},
 					"fieldList": [
 						"exists"
@@ -126,6 +132,14 @@
 											"value": "'@{variables('Log_File_Name')}'",
 											"type": "Expression"
 										}
+									},
+									"datasetParameters": {
+										"DesLogFile": {
+											"des_file_name": {
+												"value": "@variables('Log_File_Name')",
+												"type": "Expression"
+											}
+										}
 									}
 								},
 								"compute": {
@@ -177,6 +191,38 @@
 										"Log_File_Name": {
 											"value": "'@{variables('Log_File_Name')}'",
 											"type": "Expression"
+										}
+									},
+									"datasetParameters": {
+										"ExistingFile": {
+											"sou_File_name": {
+												"value": "@variables('Log_File_Name')",
+												"type": "Expression"
+											}
+										},
+										"DesLogFile": {
+											"des_file_name": {
+												"value": "@variables('Log_File_Name')",
+												"type": "Expression"
+											}
+										}
+									},
+									"linkedServiceParameters": {
+										"ExistingFile": {
+											"schemaLinkedService": {
+												"sou_File_name": {
+													"value": "@variables('Log_File_Name')",
+													"type": "Expression"
+												}
+											}
+										},
+										"DesLogFile": {
+											"schemaLinkedService": {
+												"des_file_name": {
+													"value": "@variables('Log_File_Name')",
+													"type": "Expression"
+												}
+											}
 										}
 									}
 								},
