@@ -3,63 +3,6 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "Log_PipelineErrors",
-				"type": "ExecuteDataFlow",
-				"dependsOn": [
-					{
-						"activity": "Set File Name",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "0.12:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"dataflow": {
-						"referenceName": "Log_PipelineErrors",
-						"type": "DataFlowReference",
-						"parameters": {
-							"ADF_Name": {
-								"value": "'@{pipeline().DataFactory}'",
-								"type": "Expression"
-							},
-							"PipeLineName": {
-								"value": "'@{pipeline().Pipeline}'",
-								"type": "Expression"
-							},
-							"Status": {
-								"value": "'@{string('Succes')}'",
-								"type": "Expression"
-							},
-							"RunId": {
-								"value": "'@{pipeline().RunId}'",
-								"type": "Expression"
-							},
-							"TriggerName": {
-								"value": "'@{pipeline().TriggerName}'",
-								"type": "Expression"
-							},
-							"Log_File_Name": {
-								"value": "'@{variables('Log_File_Name')}'",
-								"type": "Expression"
-							}
-						}
-					},
-					"compute": {
-						"coreCount": 8,
-						"computeType": "General"
-					},
-					"traceLevel": "Fine"
-				}
-			},
-			{
 				"name": "Wait1",
 				"type": "Wait",
 				"dependsOn": [],
@@ -84,6 +27,61 @@
 					"variableName": "Log_File_Name",
 					"value": {
 						"value": "@concat(formatDateTime(utcnow(),'yyyy-MM-dd'),'_Log.csv')",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "CheckIfFileExists",
+				"type": "GetMetadata",
+				"dependsOn": [
+					{
+						"activity": "Set File Name",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "Des_logFile",
+						"type": "DatasetReference"
+					},
+					"fieldList": [
+						"exists"
+					],
+					"storeSettings": {
+						"type": "AzureBlobStorageReadSettings",
+						"enablePartitionDiscovery": false
+					},
+					"formatSettings": {
+						"type": "DelimitedTextReadSettings"
+					}
+				}
+			},
+			{
+				"name": "If Condition1",
+				"type": "IfCondition",
+				"dependsOn": [
+					{
+						"activity": "CheckIfFileExists",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@activity('CheckIfFileExists').output.exists",
 						"type": "Expression"
 					}
 				}

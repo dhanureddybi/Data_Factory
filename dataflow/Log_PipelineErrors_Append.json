@@ -1,5 +1,5 @@
 {
-	"name": "Log_PipelineErrors",
+	"name": "Log_PipelineErrors_Append",
 	"properties": {
 		"type": "MappingDataFlow",
 		"typeProperties": {
@@ -10,6 +10,13 @@
 						"type": "DatasetReference"
 					},
 					"name": "LogFile"
+				},
+				{
+					"dataset": {
+						"referenceName": "Des_logFile",
+						"type": "DatasetReference"
+					},
+					"name": "ExistingFile"
 				}
 			],
 			"sinks": [
@@ -24,6 +31,9 @@
 			"transformations": [
 				{
 					"name": "AddColumns"
+				},
+				{
+					"name": "union1"
 				}
 			],
 			"scriptLines": [
@@ -38,12 +48,17 @@
 				"source(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false) ~> LogFile",
+				"source(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     wildcardPaths:[($Log_File_Name)]) ~> ExistingFile",
 				"LogFile derive(ADF_Name = $ADF_Name,",
 				"          PipeLineName = $PipeLineName,",
 				"          Status = $Status,",
 				"          RunId = $RunId,",
 				"          TriggerName = $TriggerName) ~> AddColumns",
-				"AddColumns sink(allowSchemaDrift: true,",
+				"AddColumns, ExistingFile union(byName: true)~> union1",
+				"union1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     partitionFileNames:[($Log_File_Name)],",
 				"     skipDuplicateMapInputs: true,",
