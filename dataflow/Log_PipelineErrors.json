@@ -28,7 +28,7 @@
 			],
 			"scriptLines": [
 				"parameters{",
-				"     ADF_Name as string,",
+				"     ADF_Name as string ($ADF_Name),",
 				"     PipeLineName as string,",
 				"     Status as string,",
 				"     RunId as string,",
