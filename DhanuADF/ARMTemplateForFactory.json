@@ -147,8 +147,7 @@
 								"datasetParameters": {
 									"LogFile": {},
 									"DesLogFile": {}
-								},
-								"linkedServiceParameters": {}
+								}
 							},
 							"staging": {},
 							"compute": {
@@ -182,7 +181,7 @@
 						"typeProperties": {
 							"variableName": "Log_File_Name",
 							"value": {
-								"value": "@concat(formatDateTime(utcnow(),'yyyy-mm-dd'),'_Log.csv')",
+								"value": "@concat(formatDateTime(utcnow(),'yyyy-MM-dd'),'_Log.csv')",
 								"type": "Expression"
 							}
 						}
