@@ -1,0 +1,38 @@
+{
+	"name": "dbjoins_emp",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "OnPremDhanuSqlDbjoins",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "SqlServerTable",
+		"schema": [
+			{
+				"name": "emp_id",
+				"type": "nchar"
+			},
+			{
+				"name": "emp_name",
+				"type": "varchar"
+			},
+			{
+				"name": "salary",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "dept_id",
+				"type": "nchar"
+			},
+			{
+				"name": "manager_id",
+				"type": "nchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "Employe"
+		}
+	}
+}

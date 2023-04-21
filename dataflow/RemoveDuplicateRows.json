@@ -1,0 +1,50 @@
+{
+	"name": "RemoveDuplicateRows",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "dbjoins_emp",
+						"type": "DatasetReference"
+					},
+					"name": "dbJoinEmpdata"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Des_Movies",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "aggregate1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          emp_id as string,",
+				"          emp_name as string,",
+				"          salary as integer,",
+				"          dept_id as string,",
+				"          manager_id as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> dbJoinEmpdata",
+				"dbJoinEmpdata aggregate(groupBy(emp_id),",
+				"     each(match(name!='emp_id'), $$ = ERROR_FUNCTION(''))) ~> aggregate1",
+				"aggregate1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink1"
+			]
+		}
+	}
+}
