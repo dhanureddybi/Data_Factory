@@ -24,6 +24,9 @@
 			"transformations": [
 				{
 					"name": "aggregate1"
+				},
+				{
+					"name": "select1"
 				}
 			],
 			"scriptLines": [
@@ -39,7 +42,16 @@
 				"     ignoreNoFilesFound: false) ~> source1",
 				"source1 aggregate(groupBy(emp_id),",
 				"     each(match(name!='Emp_id'), $$ = first($$))) ~> aggregate1",
-				"aggregate1 sink(allowSchemaDrift: true,",
+				"aggregate1 select(mapColumn(",
+				"          emp_id = aggregate1@emp_id,",
+				"          emp_name,",
+				"          salary,",
+				"          dept_id,",
+				"          manager_id",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"select1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
 				"          Column_1 as string,",
@@ -50,6 +62,7 @@
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
 				"     mapColumn(",
+				"          emp_id = aggregate1@emp_id,",
 				"          emp_id = aggregate1@emp_id,",
 				"          emp_name,",
 				"          salary,",
