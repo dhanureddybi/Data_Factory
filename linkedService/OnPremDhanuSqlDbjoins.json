@@ -1,0 +1,17 @@
+{
+	"name": "OnPremDhanuSqlDbjoins",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "SqlServer",
+		"typeProperties": {
+			"connectionString": "integrated security=True;data source=DESKTOP-F726TKR\\SQLEXPRESS;initial catalog=dbjoins",
+			"userName": "DESKTOP-F726TKR\\PC",
+			"encryptedCredential": "eyJDcmVkZW50aWFsSWQiOiJiNzMzYWZmMi02MzYyLTQ5NjQtOTI1MC1kMjY2YWRkNGIyZmEiLCJWZXJzaW9uIjoiMi4wIiwiQ2xhc3NUeXBlIjoiTWljcm9zb2Z0LkRhdGFQcm94eS5Db3JlLkludGVyU2VydmljZURhdGFDb250cmFjdC5DcmVkZW50aWFsU1UwNkNZMTQifQ=="
+		},
+		"connectVia": {
+			"referenceName": "OnPremDhanuSql",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}
