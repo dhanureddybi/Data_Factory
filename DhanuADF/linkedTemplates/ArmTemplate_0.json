@@ -165,6 +165,33 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/FSoutputBlob')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "DhanuAzureBlob",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"folderPath": "output",
+						"container": "adfdemo"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/DhanuAzureBlob')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/SourceForUnion')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -316,6 +343,236 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/integrationRuntimes/OnPremDhanuSql')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/FSoutputBlob2')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "DhanuAzureBlob",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"FileName": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": {
+							"value": "@dataset().FileName",
+							"type": "Expression"
+						},
+						"folderPath": "output",
+						"container": "adfdemo"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/DhanuAzureBlob')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/CopyAboveFileSize')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Get Metadata1",
+						"type": "GetMetadata",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "FSoutputBlob",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"fieldList": [
+								"childItems"
+							],
+							"storeSettings": {
+								"type": "AzureBlobStorageReadSettings",
+								"recursive": true,
+								"enablePartitionDiscovery": false
+							},
+							"formatSettings": {
+								"type": "DelimitedTextReadSettings"
+							}
+						}
+					},
+					{
+						"name": "ForEach1",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "Get Metadata1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('Get Metadata1').output.childItems",
+								"type": "Expression"
+							},
+							"activities": [
+								{
+									"name": "Get Metadata2",
+									"type": "GetMetadata",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"dataset": {
+											"referenceName": "FSoutputBlob2",
+											"type": "DatasetReference",
+											"parameters": {
+												"FileName": {
+													"value": "@item().Name",
+													"type": "Expression"
+												}
+											}
+										},
+										"fieldList": [
+											"size"
+										],
+										"storeSettings": {
+											"type": "AzureBlobStorageReadSettings",
+											"recursive": true,
+											"enablePartitionDiscovery": false
+										},
+										"formatSettings": {
+											"type": "DelimitedTextReadSettings"
+										}
+									}
+								},
+								{
+									"name": "If Condition1",
+									"type": "IfCondition",
+									"dependsOn": [
+										{
+											"activity": "Get Metadata2",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"userProperties": [],
+									"typeProperties": {
+										"expression": {
+											"value": "@greaterOrEquals(activity('Get Metadata2').output.size,200)",
+											"type": "Expression"
+										},
+										"ifTrueActivities": [
+											{
+												"name": "Copy data1",
+												"type": "Copy",
+												"dependsOn": [],
+												"policy": {
+													"timeout": "0.12:00:00",
+													"retry": 0,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"source": {
+														"type": "DelimitedTextSource",
+														"storeSettings": {
+															"type": "AzureBlobStorageReadSettings",
+															"recursive": true,
+															"wildcardFolderPath": "output",
+															"wildcardFileName": "*.csv",
+															"enablePartitionDiscovery": false
+														},
+														"formatSettings": {
+															"type": "DelimitedTextReadSettings"
+														}
+													},
+													"sink": {
+														"type": "DelimitedTextSink",
+														"storeSettings": {
+															"type": "AzureBlobStorageWriteSettings"
+														},
+														"formatSettings": {
+															"type": "DelimitedTextWriteSettings",
+															"quoteAllText": true,
+															"fileExtension": ".txt"
+														}
+													},
+													"enableStaging": false,
+													"translator": {
+														"type": "TabularTranslator",
+														"typeConversion": true,
+														"typeConversionSettings": {
+															"allowDataTruncation": true,
+															"treatBooleanAsNumber": false
+														}
+													}
+												},
+												"inputs": [
+													{
+														"referenceName": "FSoutputBlob",
+														"type": "DatasetReference",
+														"parameters": {}
+													}
+												],
+												"outputs": [
+													{
+														"referenceName": "FSoutputBlob2",
+														"type": "DatasetReference",
+														"parameters": {
+															"FileName": {
+																"value": "@concat(activity('Get Metadata2').output.itemName,formatDateTime(utcnow(),'dd-MM-yyyy'))",
+																"type": "Expression"
+															}
+														}
+													}
+												]
+											}
+										]
+									}
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/FSoutputBlob')]",
+				"[concat(variables('factoryId'), '/datasets/FSoutputBlob2')]"
 			]
 		},
 		{
@@ -583,471 +840,6 @@
 				"[concat(variables('factoryId'), '/datasets/log')]",
 				"[concat(variables('factoryId'), '/datasets/SourceForUnion')]",
 				"[concat(variables('factoryId'), '/datasets/Des_logFile')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/Log_PipelineErrors')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Wait1",
-						"type": "Wait",
-						"dependsOn": [],
-						"userProperties": [],
-						"typeProperties": {
-							"waitTimeInSeconds": 1
-						}
-					},
-					{
-						"name": "Set File Name",
-						"type": "SetVariable",
-						"dependsOn": [
-							{
-								"activity": "Wait1",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"variableName": "Log_File_Name",
-							"value": {
-								"value": "@concat(formatDateTime(utcnow(),'yyyy-MM-dd'),'_Log.csv')",
-								"type": "Expression"
-							}
-						}
-					},
-					{
-						"name": "CheckIfFileExists",
-						"type": "GetMetadata",
-						"dependsOn": [
-							{
-								"activity": "Set File Name",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataset": {
-								"referenceName": "SourceForUnion",
-								"type": "DatasetReference",
-								"parameters": {
-									"sou_File_name": {
-										"value": "@variables('Log_File_Name')",
-										"type": "Expression"
-									}
-								}
-							},
-							"fieldList": [
-								"exists"
-							],
-							"storeSettings": {
-								"type": "AzureBlobStorageReadSettings",
-								"recursive": true,
-								"enablePartitionDiscovery": false
-							},
-							"formatSettings": {
-								"type": "DelimitedTextReadSettings"
-							}
-						}
-					},
-					{
-						"name": "If Condition1",
-						"type": "IfCondition",
-						"dependsOn": [
-							{
-								"activity": "CheckIfFileExists",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"expression": {
-								"value": "@activity('CheckIfFileExists').output.exists",
-								"type": "Expression"
-							},
-							"ifFalseActivities": [
-								{
-									"name": "Log_PipelineErrors",
-									"type": "ExecuteDataFlow",
-									"dependsOn": [],
-									"policy": {
-										"timeout": "0.12:00:00",
-										"retry": 0,
-										"retryIntervalInSeconds": 30,
-										"secureOutput": false,
-										"secureInput": false
-									},
-									"userProperties": [],
-									"typeProperties": {
-										"dataflow": {
-											"referenceName": "Log_PipelineErrors",
-											"type": "DataFlowReference",
-											"parameters": {
-												"ADF_Name": {
-													"value": "'@{pipeline().DataFactory}'",
-													"type": "Expression"
-												},
-												"PipeLineName": {
-													"value": "'@{pipeline().Pipeline}'",
-													"type": "Expression"
-												},
-												"Status": {
-													"value": "'@{string('Done')}'",
-													"type": "Expression"
-												},
-												"RunId": {
-													"value": "'@{pipeline().RunId}'",
-													"type": "Expression"
-												},
-												"TriggerName": {
-													"value": "'@{pipeline().TriggerName}'",
-													"type": "Expression"
-												},
-												"Log_File_Name": {
-													"value": "'@{variables('Log_File_Name')}'",
-													"type": "Expression"
-												}
-											},
-											"datasetParameters": {
-												"LogFile": {},
-												"DesLogFile": {
-													"des_file_name": {
-														"value": "@variables('Log_File_Name')",
-														"type": "Expression"
-													}
-												}
-											}
-										},
-										"staging": {},
-										"compute": {
-											"coreCount": 8,
-											"computeType": "General"
-										},
-										"traceLevel": "Fine"
-									}
-								}
-							],
-							"ifTrueActivities": [
-								{
-									"name": "Log_PipelineErrors_Append",
-									"type": "ExecuteDataFlow",
-									"dependsOn": [],
-									"policy": {
-										"timeout": "0.12:00:00",
-										"retry": 0,
-										"retryIntervalInSeconds": 30,
-										"secureOutput": false,
-										"secureInput": false
-									},
-									"userProperties": [],
-									"typeProperties": {
-										"dataflow": {
-											"referenceName": "Log_PipelineErrors_Append",
-											"type": "DataFlowReference",
-											"parameters": {
-												"ADF_Name": {
-													"value": "'@{pipeline().DataFactory}'",
-													"type": "Expression"
-												},
-												"PipeLineName": {
-													"value": "'@{pipeline().Pipeline}'",
-													"type": "Expression"
-												},
-												"Status": {
-													"value": "'@{string('Done')}'",
-													"type": "Expression"
-												},
-												"RunId": {
-													"value": "'@{pipeline().RunId}'",
-													"type": "Expression"
-												},
-												"TriggerName": {
-													"value": "'@{pipeline().TriggerName}'",
-													"type": "Expression"
-												},
-												"Log_File_Name": {
-													"value": "'@{variables('Log_File_Name')}'",
-													"type": "Expression"
-												}
-											},
-											"datasetParameters": {
-												"LogFile": {},
-												"ExistingFile": {
-													"sou_File_name": {
-														"value": "@variables('Log_File_Name')",
-														"type": "Expression"
-													}
-												},
-												"DesLogFile": {
-													"des_file_name": {
-														"value": "@variables('Log_File_Name')",
-														"type": "Expression"
-													}
-												}
-											}
-										},
-										"staging": {},
-										"compute": {
-											"coreCount": 8,
-											"computeType": "General"
-										},
-										"traceLevel": "Fine"
-									}
-								}
-							]
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {},
-					"cancelAfter": {}
-				},
-				"variables": {
-					"Log_File_Name": {
-						"type": "String"
-					}
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/SourceForUnion')]",
-				"[concat(variables('factoryId'), '/dataflows/Log_PipelineErrors')]",
-				"[concat(variables('factoryId'), '/dataflows/Log_PipelineErrors_Append')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/OnPrem_to_Blob')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "getListOfFiles",
-						"type": "Lookup",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "SqlServerSource",
-								"sqlReaderQuery": "select * from INFORMATION_SCHEMA.tables where TABLE_TYPE = 'BASE TABLE' ",
-								"queryTimeout": "02:00:00",
-								"partitionOption": "None"
-							},
-							"dataset": {
-								"referenceName": "TablesList",
-								"type": "DatasetReference",
-								"parameters": {}
-							},
-							"firstRowOnly": false
-						}
-					},
-					{
-						"name": "ForEachTable",
-						"type": "ForEach",
-						"dependsOn": [
-							{
-								"activity": "getListOfFiles",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"items": {
-								"value": "@activity('getListOfFiles').output.value",
-								"type": "Expression"
-							},
-							"isSequential": true,
-							"activities": [
-								{
-									"name": "ForEachCopy",
-									"type": "Copy",
-									"dependsOn": [],
-									"policy": {
-										"timeout": "0.12:00:00",
-										"retry": 0,
-										"retryIntervalInSeconds": 30,
-										"secureOutput": false,
-										"secureInput": false
-									},
-									"userProperties": [],
-									"typeProperties": {
-										"source": {
-											"type": "SqlServerSource",
-											"queryTimeout": "02:00:00",
-											"partitionOption": "None"
-										},
-										"sink": {
-											"type": "DelimitedTextSink",
-											"storeSettings": {
-												"type": "AzureBlobStorageWriteSettings"
-											},
-											"formatSettings": {
-												"type": "DelimitedTextWriteSettings",
-												"quoteAllText": true,
-												"fileExtension": ".txt"
-											}
-										},
-										"enableStaging": false,
-										"dataIntegrationUnits": 2,
-										"translator": {
-											"type": "TabularTranslator",
-											"typeConversion": true,
-											"typeConversionSettings": {
-												"allowDataTruncation": true,
-												"treatBooleanAsNumber": false
-											}
-										}
-									},
-									"inputs": [
-										{
-											"referenceName": "Souce_Movies",
-											"type": "DatasetReference",
-											"parameters": {
-												"TableName": {
-													"value": "@item().TABLE_NAME",
-													"type": "Expression"
-												}
-											}
-										}
-									],
-									"outputs": [
-										{
-											"referenceName": "Des_Movies",
-											"type": "DatasetReference",
-											"parameters": {
-												"FileName": {
-													"value": "@concat(item().TABLE_NAME,'.csv')",
-													"type": "Expression"
-												}
-											}
-										}
-									]
-								}
-							]
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {},
-					"cancelAfter": {}
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/TablesList')]",
-				"[concat(variables('factoryId'), '/datasets/Souce_Movies')]",
-				"[concat(variables('factoryId'), '/datasets/Des_Movies')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/HandleErrorRows')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "emp_error",
-								"type": "DatasetReference"
-							},
-							"name": "errorrows"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "des_emp_errorRows",
-								"type": "DatasetReference"
-							},
-							"name": "GoodRows"
-						},
-						{
-							"dataset": {
-								"referenceName": "des_emp_BadRows",
-								"type": "DatasetReference"
-							},
-							"name": "badRows"
-						}
-					],
-					"transformations": [
-						{
-							"name": "split1"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          emp_id as integer,",
-						"          emp_name as string,",
-						"          join_date as date 'yyyy-MM-dd'",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false) ~> errorrows",
-						"errorrows split(isNull(join_date),",
-						"     disjoint: false) ~> split1@(BadRows, GoodRows)",
-						"split1@BadRows sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     input(",
-						"          Prop_0 as string,",
-						"          Prop_1 as string,",
-						"          Prop_2 as string",
-						"     ),",
-						"     deletable:false,",
-						"     insertable:true,",
-						"     updateable:false,",
-						"     upsertable:false,",
-						"     format: 'table',",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     errorHandlingOption: 'stopOnFirstError') ~> GoodRows",
-						"split1@GoodRows sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     input(",
-						"          Prop_0 as string,",
-						"          Prop_1 as string,",
-						"          Prop_2 as string",
-						"     ),",
-						"     deletable:false,",
-						"     insertable:true,",
-						"     updateable:false,",
-						"     upsertable:false,",
-						"     format: 'table',",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     errorHandlingOption: 'stopOnFirstError') ~> badRows"
-					]
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/emp_error')]",
-				"[concat(variables('factoryId'), '/datasets/des_emp_errorRows')]",
-				"[concat(variables('factoryId'), '/datasets/des_emp_BadRows')]"
 			]
 		}
 	]
