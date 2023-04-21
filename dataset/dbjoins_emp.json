@@ -5,6 +5,11 @@
 			"referenceName": "OnPremDhanuSqlDbjoins",
 			"type": "LinkedServiceReference"
 		},
+		"parameters": {
+			"Table_Name": {
+				"type": "string"
+			}
+		},
 		"annotations": [],
 		"type": "SqlServerTable",
 		"schema": [
@@ -32,7 +37,10 @@
 		],
 		"typeProperties": {
 			"schema": "dbo",
-			"table": "Employe"
+			"table": {
+				"value": "@dataset().Table_Name",
+				"type": "Expression"
+			}
 		}
 	}
 }
