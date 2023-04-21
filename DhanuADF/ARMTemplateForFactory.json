@@ -620,6 +620,93 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/Move_empFiletocsv')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "dbjoins_emptable",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureBlobStorageWriteSettings"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "dbjoins_emp",
+								"type": "DatasetReference",
+								"parameters": {
+									"Table_Name": {
+										"value": "@pipeline().parameters.TaableName",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "Des_Movies",
+								"type": "DatasetReference",
+								"parameters": {
+									"FileName": {
+										"value": "@concat(pipeline().parameters.TaableName,'.csv')",
+										"type": "Expression"
+									}
+								}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"parameters": {
+					"TaableName": {
+						"type": "string"
+					}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/dbjoins_emp')]",
+				"[concat(variables('factoryId'), '/datasets/Des_Movies')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/OnPrem_to_Blob')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -753,14 +840,14 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/Remove_Duplicate_Rows')]",
+			"name": "[concat(parameters('factoryName'), '/RemoveDuplicates')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"activities": [
 					{
-						"name": "dbjoins_emptable",
-						"type": "Copy",
+						"name": "RemoveDuplicates",
+						"type": "ExecuteDataFlow",
 						"dependsOn": [],
 						"policy": {
 							"timeout": "0.12:00:00",
@@ -771,56 +858,24 @@
 						},
 						"userProperties": [],
 						"typeProperties": {
-							"source": {
-								"type": "SqlServerSource",
-								"queryTimeout": "02:00:00",
-								"partitionOption": "None"
-							},
-							"sink": {
-								"type": "DelimitedTextSink",
-								"storeSettings": {
-									"type": "AzureBlobStorageWriteSettings"
-								},
-								"formatSettings": {
-									"type": "DelimitedTextWriteSettings",
-									"quoteAllText": true,
-									"fileExtension": ".txt"
-								}
-							},
-							"enableStaging": false,
-							"translator": {
-								"type": "TabularTranslator",
-								"typeConversion": true,
-								"typeConversionSettings": {
-									"allowDataTruncation": true,
-									"treatBooleanAsNumber": false
-								}
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "dbjoins_emp",
-								"type": "DatasetReference",
-								"parameters": {
-									"Table_Name": {
-										"value": "@pipeline().parameters.TaableName",
-										"type": "Expression"
+							"dataflow": {
+								"referenceName": "RemoveDuplicates",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"source1": {},
+									"sink1": {
+										"Table_Name": "Employe"
 									}
 								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "Des_Movies",
-								"type": "DatasetReference",
-								"parameters": {
-									"FileName": {
-										"value": "@concat(pipeline().parameters.TaableName,'.csv')",
-										"type": "Expression"
-									}
-								}
-							}
-						]
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
 					}
 				],
 				"policy": {
@@ -828,15 +883,15 @@
 					"cancelAfter": {}
 				},
 				"parameters": {
-					"TaableName": {
-						"type": "string"
+					"TableName": {
+						"type": "string",
+						"defaultValue": "Employe"
 					}
 				},
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/dbjoins_emp')]",
-				"[concat(variables('factoryId'), '/datasets/Des_Movies')]"
+				"[concat(variables('factoryId'), '/dataflows/RemoveDuplicates')]"
 			]
 		},
 		{
@@ -908,6 +963,56 @@
 					"quoteChar": "\""
 				},
 				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/DhanuAzureBlob')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Employe')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "DhanuAzureBlob",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "Employe.csv",
+						"folderPath": "output",
+						"container": "adfdemo"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "emp_id",
+						"type": "String"
+					},
+					{
+						"name": "emp_name",
+						"type": "String"
+					},
+					{
+						"name": "salary",
+						"type": "String"
+					},
+					{
+						"name": "dept_id",
+						"type": "String"
+					},
+					{
+						"name": "manager_id",
+						"type": "String"
+					}
+				]
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/DhanuAzureBlob')]"
@@ -1655,6 +1760,74 @@
 				"[concat(variables('factoryId'), '/datasets/log')]",
 				"[concat(variables('factoryId'), '/datasets/SourceForUnion')]",
 				"[concat(variables('factoryId'), '/datasets/Des_logFile')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/RemoveDuplicates')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "Employe",
+								"type": "DatasetReference"
+							},
+							"name": "source1"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "des_dbjoinsEmp",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "aggregate1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          emp_id as string,",
+						"          emp_name as string,",
+						"          salary as string,",
+						"          dept_id as string,",
+						"          manager_id as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> source1",
+						"source1 aggregate(groupBy(emp_id),",
+						"     each(match(name!='emp_id'), $$ = first($$))) ~> aggregate1",
+						"aggregate1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          Column_1 as string,",
+						"          Column_2 as string,",
+						"          Column_3 as string,",
+						"          Column_4 as string",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     mapColumn(",
+						"          emp_id,",
+						"          emp_name,",
+						"          salary,",
+						"          dept_id,",
+						"          manager_id",
+						"     )) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/Employe')]",
+				"[concat(variables('factoryId'), '/datasets/des_dbjoinsEmp')]"
 			]
 		}
 	]
