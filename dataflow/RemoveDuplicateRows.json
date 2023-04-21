@@ -6,7 +6,7 @@
 			"sources": [
 				{
 					"dataset": {
-						"referenceName": "dbjoins_emp",
+						"referenceName": "des_dbjoinsEmp",
 						"type": "DatasetReference"
 					},
 					"name": "dbJoinEmpdata"
@@ -28,16 +28,14 @@
 			],
 			"scriptLines": [
 				"source(output(",
-				"          emp_id as string,",
-				"          emp_name as string,",
-				"          salary as integer,",
-				"          dept_id as string,",
-				"          manager_id as string",
+				"          Column_1 as string,",
+				"          Column_2 as string,",
+				"          Column_3 as string,",
+				"          Column_4 as string",
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     isolationLevel: 'READ_UNCOMMITTED',",
-				"     format: 'table') ~> dbJoinEmpdata",
+				"     ignoreNoFilesFound: false) ~> dbJoinEmpdata",
 				"dbJoinEmpdata aggregate(groupBy(emp_id),",
 				"     each(match(name!='emp_id'), $$ = ERROR_FUNCTION(''))) ~> aggregate1",
 				"aggregate1 sink(allowSchemaDrift: true,",
