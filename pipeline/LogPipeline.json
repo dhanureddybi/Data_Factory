@@ -15,7 +15,10 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"storedProcedureName": "[dbo].[USP_LOGTEST]",
+					"storedProcedureName": {
+						"value": "ALTER PROCEDURE [dbo].[USP_LOGTEST] (\n    @ADF_NAME VARCHAR(50),\n    @PIPE_NAME NVARCHAR(100),\n    @TRIGGER_ID NVARCHAR,\n    @RUN_ID VARCHAR(50),\n    @TRIGGERTIME DATETIME )\n    AS\n    BEGIN\n    INSERT INTO LOGTEST VALUES(@ADF_NAME,@PIPE_NAME,@TRIGGER_ID,@RUN_ID,@TRIGGERTIME)\n    END",
+						"type": "Expression"
+					},
 					"storedProcedureParameters": {
 						"ADF_NAME": {
 							"value": {
