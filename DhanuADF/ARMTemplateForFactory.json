@@ -1243,6 +1243,7 @@
 					},
 					"columnDelimiter": ",",
 					"escapeChar": "\\",
+					"firstRowAsHeader": true,
 					"quoteChar": "\""
 				},
 				"schema": [
@@ -1813,16 +1814,9 @@
 						"          Column_3 as string,",
 						"          Column_4 as string",
 						"     ),",
-						"     partitionFileNames:['newEmploye'],",
+						"     partitionFileNames:['newEmploye.csv'],",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
-						"     mapColumn(",
-						"          emp_id,",
-						"          emp_name,",
-						"          salary,",
-						"          dept_id,",
-						"          manager_id",
-						"     ),",
 						"     partitionBy('hash', 1)) ~> sink1"
 					]
 				}
