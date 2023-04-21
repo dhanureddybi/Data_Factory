@@ -1813,6 +1813,7 @@
 						"          Column_3 as string,",
 						"          Column_4 as string",
 						"     ),",
+						"     partitionFileNames:['newEmploye'],",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
 						"     mapColumn(",
@@ -1821,7 +1822,8 @@
 						"          salary,",
 						"          dept_id,",
 						"          manager_id",
-						"     )) ~> sink1"
+						"     ),",
+						"     partitionBy('hash', 1)) ~> sink1"
 					]
 				}
 			},
