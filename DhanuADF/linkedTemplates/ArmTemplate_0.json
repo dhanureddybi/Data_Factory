@@ -24,6 +24,15 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'password' of 'OnPremDhanuSql'"
 		},
+		"OnPremDhanuSqlDbjoins_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'OnPremDhanuSqlDbjoins'",
+			"defaultValue": "Integrated Security=True;Data Source=DESKTOP-F726TKR\\SQLEXPRESS;Initial Catalog=dbjoins"
+		},
+		"OnPremDhanuSqlDbjoins_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'OnPremDhanuSqlDbjoins'"
+		},
 		"AzureSqlKey_properties_typeProperties_baseUrl": {
 			"type": "string",
 			"defaultValue": "https://DhanuADFvault.vault.azure.net/"
@@ -33,6 +42,10 @@
 			"defaultValue": "DhanuSQLCon"
 		},
 		"OnPremDhanuSql_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "DESKTOP-F726TKR\\PC"
+		},
+		"OnPremDhanuSqlDbjoins_properties_typeProperties_userName": {
 			"type": "string",
 			"defaultValue": "DESKTOP-F726TKR\\PC"
 		}
@@ -264,6 +277,55 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/des_dbjoinsEmp')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "DhanuAzureBlob",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"Table_Name": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": {
+							"value": "@dataset().Table_Name",
+							"type": "Expression"
+						},
+						"folderPath": "output",
+						"container": "adfdemo"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/DhanuAzureBlob')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/emp_error')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -370,6 +432,30 @@
 					"password": {
 						"type": "SecureString",
 						"value": "[parameters('OnPremDhanuSql_password')]"
+					}
+				},
+				"connectVia": {
+					"referenceName": "OnPremDhanuSql",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/integrationRuntimes/OnPremDhanuSql')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/OnPremDhanuSqlDbjoins')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "SqlServer",
+				"typeProperties": {
+					"connectionString": "[parameters('OnPremDhanuSqlDbjoins_connectionString')]",
+					"userName": "[parameters('OnPremDhanuSqlDbjoins_properties_typeProperties_userName')]",
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('OnPremDhanuSqlDbjoins_password')]"
 					}
 				},
 				"connectVia": {
@@ -595,7 +681,10 @@
 						},
 						"userProperties": [],
 						"typeProperties": {
-							"storedProcedureName": "[[dbo].[USP_LOGTEST]",
+							"storedProcedureName": {
+								"value": "ALTER PROCEDURE [dbo].[USP_LOGTEST] (\n    @ADF_NAME VARCHAR(50),\n    @PIPE_NAME NVARCHAR(100),\n    @TRIGGER_ID NVARCHAR,\n    @RUN_ID VARCHAR(50),\n    @TRIGGERTIME DATETIME )\n    AS\n    BEGIN\n    INSERT INTO LOGTEST VALUES(@ADF_NAME,@PIPE_NAME,@TRIGGER_ID,@RUN_ID,@TRIGGERTIME)\n    END",
+								"type": "Expression"
+							},
 							"storedProcedureParameters": {
 								"ADF_NAME": {
 									"value": {
@@ -698,139 +787,54 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/des_emp_BadRows')]",
+			"name": "[concat(parameters('factoryName'), '/dbjoins_emp')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"linkedServiceName": {
-					"referenceName": "AzureSqlDatabase",
+					"referenceName": "OnPremDhanuSqlDbjoins",
 					"type": "LinkedServiceReference"
 				},
+				"parameters": {
+					"Table_Name": {
+						"type": "string"
+					}
+				},
 				"annotations": [],
-				"type": "AzureSqlTable",
+				"type": "SqlServerTable",
 				"schema": [
 					{
-						"name": "Prop_0",
-						"type": "nvarchar"
+						"name": "emp_id",
+						"type": "nchar"
 					},
 					{
-						"name": "Prop_1",
-						"type": "nvarchar"
+						"name": "emp_name",
+						"type": "varchar"
 					},
 					{
-						"name": "Prop_2",
-						"type": "nvarchar"
+						"name": "salary",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "dept_id",
+						"type": "nchar"
+					},
+					{
+						"name": "manager_id",
+						"type": "nchar"
 					}
 				],
 				"typeProperties": {
 					"schema": "dbo",
-					"table": "emp_badrows"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabase')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/des_emp_errorRows')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureSqlDatabase",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "AzureSqlTable",
-				"schema": [
-					{
-						"name": "Prop_0",
-						"type": "nvarchar"
-					},
-					{
-						"name": "Prop_1",
-						"type": "nvarchar"
-					},
-					{
-						"name": "Prop_2",
-						"type": "nvarchar"
+					"table": {
+						"value": "@dataset().Table_Name",
+						"type": "Expression"
 					}
-				],
-				"typeProperties": {
-					"schema": "dbo",
-					"table": "emp_error"
 				}
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabase')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/Log_PipelineErrors')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "log",
-								"type": "DatasetReference"
-							},
-							"name": "LogFile"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "Des_logFile",
-								"type": "DatasetReference"
-							},
-							"name": "DesLogFile"
-						}
-					],
-					"transformations": [
-						{
-							"name": "AddColumns"
-						}
-					],
-					"scriptLines": [
-						"parameters{",
-						"     ADF_Name as string,",
-						"     PipeLineName as string,",
-						"     Status as string,",
-						"     RunId as string,",
-						"     TriggerName as string,",
-						"     Log_File_Name as string",
-						"}",
-						"source(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false) ~> LogFile",
-						"LogFile derive(ADF_Name = $ADF_Name,",
-						"          PipeLineName = $PipeLineName,",
-						"          Status = $Status,",
-						"          RunId = $RunId,",
-						"          TriggerName = $TriggerName) ~> AddColumns",
-						"AddColumns sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     partitionFileNames:[($Log_File_Name)],",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     mapColumn(",
-						"          ADF_name = ADF_Name,",
-						"          PipeLineName,",
-						"          Status,",
-						"          RunId,",
-						"          TriggerName",
-						"     ),",
-						"     partitionBy('hash', 1)) ~> DesLogFile"
-					]
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/log')]",
-				"[concat(variables('factoryId'), '/datasets/Des_logFile')]"
+				"[concat(variables('factoryId'), '/linkedServices/OnPremDhanuSqlDbjoins')]"
 			]
 		}
 	]

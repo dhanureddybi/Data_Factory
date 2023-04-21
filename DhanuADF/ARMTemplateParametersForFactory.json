@@ -17,6 +17,12 @@
 		"OnPremDhanuSql_password": {
 			"value": ""
 		},
+		"OnPremDhanuSqlDbjoins_connectionString": {
+			"value": "Integrated Security=True;Data Source=DESKTOP-F726TKR\\SQLEXPRESS;Initial Catalog=dbjoins"
+		},
+		"OnPremDhanuSqlDbjoins_password": {
+			"value": ""
+		},
 		"AzureSqlDatabase_properties_typeProperties_connectionString_secretName": {
 			"value": "DhanuSQLCon"
 		},
@@ -24,6 +30,9 @@
 			"value": "https://DhanuADFvault.vault.azure.net/"
 		},
 		"OnPremDhanuSql_properties_typeProperties_userName": {
+			"value": "DESKTOP-F726TKR\\PC"
+		},
+		"OnPremDhanuSqlDbjoins_properties_typeProperties_userName": {
 			"value": "DESKTOP-F726TKR\\PC"
 		}
 	}
