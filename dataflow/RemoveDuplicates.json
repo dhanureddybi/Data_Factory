@@ -50,13 +50,6 @@
 				"     partitionFileNames:['newEmploye'],",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
-				"     mapColumn(",
-				"          emp_id,",
-				"          emp_name,",
-				"          salary,",
-				"          dept_id,",
-				"          manager_id",
-				"     ),",
 				"     partitionBy('hash', 1)) ~> sink1"
 			]
 		}
