@@ -13,6 +13,86 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/Log_PipelineErrors_Append')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "log",
+								"type": "DatasetReference"
+							},
+							"name": "LogFile"
+						},
+						{
+							"dataset": {
+								"referenceName": "SourceForUnion",
+								"type": "DatasetReference"
+							},
+							"name": "ExistingFile"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "Des_logFile",
+								"type": "DatasetReference"
+							},
+							"name": "DesLogFile"
+						}
+					],
+					"transformations": [
+						{
+							"name": "AddColumns"
+						},
+						{
+							"name": "union1"
+						}
+					],
+					"scriptLines": [
+						"parameters{",
+						"     ADF_Name as string,",
+						"     PipeLineName as string,",
+						"     Status as string,",
+						"     RunId as string,",
+						"     TriggerName as string,",
+						"     Log_File_Name as string",
+						"}",
+						"source(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> LogFile",
+						"source(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     wildcardPaths:[($Log_File_Name)]) ~> ExistingFile",
+						"LogFile derive(ADF_Name = $ADF_Name,",
+						"          PipeLineName = $PipeLineName,",
+						"          Status = $Status,",
+						"          RunId = $RunId,",
+						"          TriggerName = $TriggerName) ~> AddColumns",
+						"AddColumns, ExistingFile union(byName: true)~> union1",
+						"union1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     partitionFileNames:[($Log_File_Name)],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     mapColumn(",
+						"          ADF_name = ADF_Name,",
+						"          PipeLineName,",
+						"          Status,",
+						"          RunId,",
+						"          TriggerName",
+						"     ),",
+						"     partitionBy('hash', 1)) ~> DesLogFile"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/Log_PipelineErrors')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -251,7 +331,9 @@
 				},
 				"annotations": []
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/Log_PipelineErrors_Append')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/OnPrem_to_Blob')]",
