@@ -77,7 +77,7 @@
 							"userProperties": [],
 							"typeProperties": {
 								"expression": {
-									"value": "@bool(equals(item().value.LOAD_FLAG,'Incremental'))",
+									"value": "@bool(equals(item().LOAD_FLAG,'Incremental'))",
 									"type": "Expression"
 								}
 							}
