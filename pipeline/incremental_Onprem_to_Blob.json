@@ -65,10 +65,10 @@
 				"userProperties": [],
 				"typeProperties": {
 					"items": {
-						"value": "@activity('LookupCFGTable').output.value",
+						"value": "@activity('FilterSQLDB').output.Value\n\n",
 						"type": "Expression"
 					},
-					"isSequential": true,
+					"isSequential": false,
 					"activities": [
 						{
 							"name": "If Condition1",
@@ -79,37 +79,7 @@
 								"expression": {
 									"value": "@bool(equals(item().value.LOAD_FLAG,'Incremental'))",
 									"type": "Expression"
-								},
-								"ifTrueActivities": [
-									{
-										"name": "Lookup1",
-										"type": "Lookup",
-										"dependsOn": [],
-										"policy": {
-											"timeout": "0.12:00:00",
-											"retry": 0,
-											"retryIntervalInSeconds": 30,
-											"secureOutput": false,
-											"secureInput": false
-										},
-										"userProperties": [],
-										"typeProperties": {
-											"source": {
-												"type": "SqlServerSource",
-												"sqlReaderQuery": "SELECT * FROM ",
-												"queryTimeout": "02:00:00",
-												"partitionOption": "None"
-											},
-											"dataset": {
-												"referenceName": "Src_dbjoins_eshop",
-												"type": "DatasetReference",
-												"parameters": {
-													"Table_Name": "Customer"
-												}
-											}
-										}
-									}
-								]
+								}
 							}
 						}
 					]
