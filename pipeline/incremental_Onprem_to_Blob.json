@@ -207,7 +207,7 @@
 												"type": "DatasetReference",
 												"parameters": {
 													"File_Name": {
-														"value": "@activity('FilterSQLDB').output.value.DEST_TABLE[0]['status']",
+														"value": "@item().DEST_TABLE",
 														"type": "Expression"
 													}
 												}
@@ -307,7 +307,7 @@
 												"type": "DatasetReference",
 												"parameters": {
 													"File_Name": {
-														"value": "@activity('FilterSQLDB').output.value.DEST_TABLE[0]['status']",
+														"value": "@item().DEST_TABLE",
 														"type": "Expression"
 													}
 												}
