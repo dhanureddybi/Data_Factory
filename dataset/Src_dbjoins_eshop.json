@@ -5,11 +5,6 @@
 			"referenceName": "OnPremDhanuSqlDbjoins",
 			"type": "LinkedServiceReference"
 		},
-		"parameters": {
-			"Table_Name": {
-				"type": "String"
-			}
-		},
 		"annotations": [],
 		"type": "SqlServerTable",
 		"schema": [],
