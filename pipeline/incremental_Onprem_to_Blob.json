@@ -104,10 +104,7 @@
 												"referenceName": "Src_dbjoins_eshop",
 												"type": "DatasetReference",
 												"parameters": {
-													"Table_Name": {
-														"value": "@pipeline().parameters.TableName",
-														"type": "Expression"
-													}
+													"Table_Name": "Customer"
 												}
 											}
 										}
