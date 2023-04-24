@@ -131,7 +131,7 @@
 												"type": "DatasetReference",
 												"parameters": {
 													"File_Name": {
-														"value": "@activity('FilterSQLDB').output.value.DEST_TABLE",
+														"value": "@item().DEST_TABLE",
 														"type": "Expression"
 													}
 												}
