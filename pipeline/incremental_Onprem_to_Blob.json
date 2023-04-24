@@ -129,7 +129,7 @@
 										"typeProperties": {
 											"source": {
 												"type": "SqlServerSource",
-												"sqlReaderQuery": "SELECT * FROM @{item().SOURCE_TABLE} CONVERT(datetime,@{item().WATERMARK_COLUMN}) > CONVERT(datetime,substring(REPLACE(@{activity('GetDateFromSrcTable').output.value.WATERMARK_VALUE},'T',' '),1,19))",
+												"sqlReaderQuery": "SELECT * FROM @{item().SOURCE_TABLE} CONVERT(datetime,@{item().WATERMARK_COLUMN},105) > CONVERT(datetime,substring(REPLACE('@{activity('GetDateFromSrcTable').output.firstRow.WATERMARK_VALUE}','T',' '),1,19),120)",
 												"queryTimeout": "02:00:00",
 												"partitionOption": "None"
 											},
