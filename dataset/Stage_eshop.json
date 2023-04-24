@@ -5,11 +5,20 @@
 			"referenceName": "DhanuAzureBlob",
 			"type": "LinkedServiceReference"
 		},
+		"parameters": {
+			"File_Name": {
+				"type": "String"
+			}
+		},
 		"annotations": [],
 		"type": "DelimitedText",
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobStorageLocation",
+				"fileName": {
+					"value": "@dataset().File_Name",
+					"type": "Expression"
+				},
 				"folderPath": "Stage_eshop",
 				"container": "adfdemo"
 			},
