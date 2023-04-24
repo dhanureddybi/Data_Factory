@@ -1027,6 +1027,143 @@
 											"value": "@bool(equals(item().LOAD_FLAG,'Incremental'))",
 											"type": "Expression"
 										},
+										"ifFalseActivities": [
+											{
+												"name": "GetFileIFExists",
+												"type": "Lookup",
+												"dependsOn": [],
+												"policy": {
+													"timeout": "0.12:00:00",
+													"retry": 0,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"source": {
+														"type": "SqlServerSource",
+														"sqlReaderQuery": "SELECT WATERMARK_VALUE FROM DBO.CFG WHERE SOURCE_TABLE LIKE '@{item().SOURCE_TABLE}'",
+														"queryTimeout": "02:00:00",
+														"partitionOption": "None"
+													},
+													"dataset": {
+														"referenceName": "Src_dbjoins_eshop",
+														"type": "DatasetReference",
+														"parameters": {}
+													}
+												}
+											},
+											{
+												"name": "Get Last Mode Date",
+												"type": "GetMetadata",
+												"dependsOn": [
+													{
+														"activity": "GetFileIFExists",
+														"dependencyConditions": [
+															"Succeeded"
+														]
+													}
+												],
+												"policy": {
+													"timeout": "0.12:00:00",
+													"retry": 0,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"dataset": {
+														"referenceName": "Stage_eshop",
+														"type": "DatasetReference",
+														"parameters": {
+															"File_Name": {
+																"value": "@activity('FilterSQLDB').output.value.DEST_TABLE",
+																"type": "Expression"
+															}
+														}
+													},
+													"fieldList": [
+														"lastModified"
+													],
+													"storeSettings": {
+														"type": "AzureBlobStorageReadSettings",
+														"enablePartitionDiscovery": false
+													},
+													"formatSettings": {
+														"type": "DelimitedTextReadSettings"
+													}
+												}
+											},
+											{
+												"name": "Copy data1",
+												"type": "Copy",
+												"dependsOn": [
+													{
+														"activity": "Get Last Mode Date",
+														"dependencyConditions": [
+															"Succeeded"
+														]
+													}
+												],
+												"policy": {
+													"timeout": "0.12:00:00",
+													"retry": 0,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"source": {
+														"type": "SqlServerSource",
+														"sqlReaderQuery": "SELECT * FROM @activity('GetFileIFExists').output.firstRow.SOURCE_TABLE",
+														"queryTimeout": "02:00:00",
+														"partitionOption": "None"
+													},
+													"sink": {
+														"type": "DelimitedTextSink",
+														"storeSettings": {
+															"type": "AzureBlobStorageWriteSettings"
+														},
+														"formatSettings": {
+															"type": "DelimitedTextWriteSettings",
+															"quoteAllText": true,
+															"fileExtension": ".txt"
+														}
+													},
+													"enableStaging": false,
+													"translator": {
+														"type": "TabularTranslator",
+														"typeConversion": true,
+														"typeConversionSettings": {
+															"allowDataTruncation": true,
+															"treatBooleanAsNumber": false
+														}
+													}
+												},
+												"inputs": [
+													{
+														"referenceName": "Src_dbjoins_eshop",
+														"type": "DatasetReference",
+														"parameters": {}
+													}
+												],
+												"outputs": [
+													{
+														"referenceName": "Stage_eshop",
+														"type": "DatasetReference",
+														"parameters": {
+															"File_Name": {
+																"value": "@activity('FilterSQLDB').output.value.DEST_TABLE",
+																"type": "Expression"
+															}
+														}
+													}
+												]
+											}
+										],
 										"ifTrueActivities": [
 											{
 												"name": "GetDateFromSrcTable",
@@ -1043,7 +1180,10 @@
 												"typeProperties": {
 													"source": {
 														"type": "SqlServerSource",
-														"sqlReaderQuery": "SELECT WATERMARK_VALUE FROM DBO.CFG WHERE SOURCE_TABLE LIKE '@{item().SOURCE_TABLE}'",
+														"sqlReaderQuery": {
+															"value": "SELECT WATERMARK_VALUE FROM DBO.CFG WHERE SOURCE_TABLE LIKE '@{item().SOURCE_TABLE}'",
+															"type": "Expression"
+														},
 														"queryTimeout": "02:00:00",
 														"partitionOption": "None"
 													},
@@ -1077,7 +1217,10 @@
 												"typeProperties": {
 													"source": {
 														"type": "SqlServerSource",
-														"sqlReaderQuery": "SELECT * FROM @{item().SOURCE_TABLE} WHERE CONVERT(datetime,@{item().WATERMARK_COLUMN},105) > CONVERT(datetime,substring(REPLACE('@{activity('GetDateFromSrcTable').output.firstRow.WATERMARK_VALUE}','T',' '),1,19),120)",
+														"sqlReaderQuery": {
+															"value": "SELECT * FROM @{item().SOURCE_TABLE} WHERE CONVERT(datetime,@{item().WATERMARK_COLUMN},105) > CONVERT(datetime,substring(REPLACE('@{activity('GetDateFromSrcTable').output.firstRow.WATERMARK_VALUE}','T',' '),1,19),120)",
+															"type": "Expression"
+														},
 														"queryTimeout": "02:00:00",
 														"partitionOption": "None"
 													},
@@ -1113,7 +1256,12 @@
 													{
 														"referenceName": "Stage_eshop",
 														"type": "DatasetReference",
-														"parameters": {}
+														"parameters": {
+															"File_Name": {
+																"value": "@activity('FilterSQLDB').output.value.DEST_TABLE",
+																"type": "Expression"
+															}
+														}
 													}
 												]
 											}
@@ -1406,6 +1554,43 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/OnPremDhanuSqlDbjoins')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Stage_eshop')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "DhanuAzureBlob",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"File_Name": {
+						"type": "String"
+					}
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": {
+							"value": "@dataset().File_Name",
+							"type": "Expression"
+						},
+						"folderPath": "Stage_eshop",
+						"container": "adfdemo"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/DhanuAzureBlob')]"
 			]
 		},
 		{
@@ -2147,34 +2332,6 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/Employe')]",
 				"[concat(variables('factoryId'), '/datasets/des_dbjoinsEmp')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/Stage_eshop')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "DhanuAzureBlob",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "DelimitedText",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobStorageLocation",
-						"folderPath": "Stage_eshop",
-						"container": "adfdemo"
-					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"firstRowAsHeader": true,
-					"quoteChar": "\""
-				},
-				"schema": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/DhanuAzureBlob')]"
 			]
 		}
 	]
