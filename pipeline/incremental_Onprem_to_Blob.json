@@ -96,7 +96,10 @@
 										"typeProperties": {
 											"source": {
 												"type": "SqlServerSource",
-												"sqlReaderQuery": "SELECT WATERMARK_VALUE FROM DBO.CFG WHERE SOURCE_TABLE LIKE '@{item().SOURCE_TABLE}'",
+												"sqlReaderQuery": {
+													"value": "SELECT WATERMARK_VALUE FROM DBO.CFG WHERE SOURCE_TABLE LIKE '@{item().SOURCE_TABLE}'",
+													"type": "Expression"
+												},
 												"queryTimeout": "02:00:00",
 												"partitionOption": "None"
 											},
@@ -129,7 +132,10 @@
 										"typeProperties": {
 											"source": {
 												"type": "SqlServerSource",
-												"sqlReaderQuery": "SELECT * FROM @{item().SOURCE_TABLE} WHERE CONVERT(datetime,@{item().WATERMARK_COLUMN},105) > CONVERT(datetime,substring(REPLACE('@{activity('GetDateFromSrcTable').output.firstRow.WATERMARK_VALUE}','T',' '),1,19),120)",
+												"sqlReaderQuery": {
+													"value": "SELECT * FROM @{item().SOURCE_TABLE} WHERE CONVERT(datetime,@{item().WATERMARK_COLUMN},105) > CONVERT(datetime,substring(REPLACE('@{activity('GetDateFromSrcTable').output.firstRow.WATERMARK_VALUE}','T',' '),1,19),120)",
+													"type": "Expression"
+												},
 												"queryTimeout": "02:00:00",
 												"partitionOption": "None"
 											},
@@ -163,7 +169,13 @@
 										"outputs": [
 											{
 												"referenceName": "Stage_eshop",
-												"type": "DatasetReference"
+												"type": "DatasetReference",
+												"parameters": {
+													"File_Name": {
+														"value": "@activity('GetDateFromSrcTable').output.value.SOURCE_TABLE",
+														"type": "Expression"
+													}
+												}
 											}
 										]
 									}
