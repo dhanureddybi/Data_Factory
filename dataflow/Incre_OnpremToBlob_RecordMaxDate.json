@@ -15,7 +15,7 @@
 			"sinks": [
 				{
 					"dataset": {
-						"referenceName": "Src_dbjoins_eshop",
+						"referenceName": "cfg_table",
 						"type": "DatasetReference"
 					},
 					"name": "sink1"
@@ -53,7 +53,7 @@
 				"    max(toTimestamp(toString(byName($WATERMARK_FIELD)),'dd-MM-yyyy HH:mm')), \r",
 				"    max(toTimestamp(toString(byName($WATERMARK_FIELD)),'dd-MM-yyyy HH:mm')))) ~> aggregate1",
 				"derivedColumn1 alterRow(updateIf(isNull(Max_Created_Modified_Date)==false())) ~> alterRow1",
-				"aggregate1 derive(Table_Name = $SOURCE_TABLE) ~> derivedColumn1",
+				"aggregate1 derive(DEST_TABLE = $SOURCE_TABLE) ~> derivedColumn1",
 				"alterRow1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
