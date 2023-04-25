@@ -211,6 +211,14 @@
 														"value": "'@{item().WATERMARK_COLUMN}'",
 														"type": "Expression"
 													}
+												},
+												"datasetParameters": {
+													"source1": {
+														"FileName": {
+															"value": "@item().DEST_TABLE",
+															"type": "Expression"
+														}
+													}
 												}
 											},
 											"compute": {
