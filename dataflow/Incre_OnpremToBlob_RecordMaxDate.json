@@ -15,7 +15,7 @@
 			"sinks": [
 				{
 					"dataset": {
-						"referenceName": "cfg_table",
+						"referenceName": "AzureSql_CFG",
 						"type": "DatasetReference"
 					},
 					"name": "sink1"
@@ -74,7 +74,8 @@
 				"     keys:['DEST_TABLE'],",
 				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true) ~> sink1"
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
 			]
 		}
 	}
