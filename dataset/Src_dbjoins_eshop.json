@@ -7,7 +7,47 @@
 		},
 		"annotations": [],
 		"type": "SqlServerTable",
-		"schema": [],
+		"schema": [
+			{
+				"name": "SOURCE",
+				"type": "varchar"
+			},
+			{
+				"name": "SOURCE_TABLE",
+				"type": "varchar"
+			},
+			{
+				"name": "DEST_TABLE",
+				"type": "varchar"
+			},
+			{
+				"name": "COLUMNS",
+				"type": "varchar"
+			},
+			{
+				"name": "WATERMARK_COLUMN",
+				"type": "varchar"
+			},
+			{
+				"name": "WATERMARK_VALUE",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "ENABLED",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "LOAD_FLAG",
+				"type": "varchar"
+			},
+			{
+				"name": "STATUS",
+				"type": "varchar"
+			}
+		],
 		"typeProperties": {
 			"schema": "dbo",
 			"table": "CFG"
