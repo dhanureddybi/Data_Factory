@@ -1,0 +1,50 @@
+{
+	"name": "Src_StageEshop_Blob",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "DhanuAzureBlob",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"FileName": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": {
+					"value": "@dataset().FileName",
+					"type": "Expression"
+				},
+				"folderPath": "Stage_eshop",
+				"container": "adfdemo"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"type": "String"
+			},
+			{
+				"type": "String"
+			},
+			{
+				"type": "String"
+			},
+			{
+				"type": "String"
+			},
+			{
+				"type": "String"
+			},
+			{
+				"type": "String"
+			}
+		]
+	}
+}
