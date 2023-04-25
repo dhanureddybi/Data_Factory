@@ -1,0 +1,44 @@
+{
+	"name": "Incre_OnpremToBlob_RecordMaxDate",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Src_StageEshop_Blob",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "aggregate1"
+				}
+			],
+			"scriptLines": [
+				"parameters{",
+				"     SOURCE_TABLE as string,",
+				"     WATERMARK_FIELD as string",
+				"}",
+				"source(output(",
+				"          customer_Id as string,",
+				"          DOB as string,",
+				"          Gender as string,",
+				"          city_code as string,",
+				"          Customer_Name as string,",
+				"          Created_Modified_Date as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     partitionBy('hash', 1)) ~> source1",
+				"source1 aggregate(Created_Modified_Date = iif($SOURCE_TABLE == 'Customer.csv', \r",
+				"    max(toTimestamp(toString(byName($WATERMARK_FIELD)),'dd-MM-yyyy HH:mm')), \r",
+				"    max(toTimestamp(toString(byName($WATERMARK_FIELD)),'dd-MM-yyyy HH:mm')))) ~> aggregate1"
+			]
+		}
+	}
+}
