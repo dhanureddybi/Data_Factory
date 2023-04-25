@@ -327,6 +327,68 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/Src_StageEshop_Blob')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "DhanuAzureBlob",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"FileName": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": {
+							"value": "@dataset().FileName",
+							"type": "Expression"
+						},
+						"folderPath": "Stage_eshop",
+						"container": "adfdemo"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "customer_Id",
+						"type": "String"
+					},
+					{
+						"name": "DOB",
+						"type": "String"
+					},
+					{
+						"name": "Gender",
+						"type": "String"
+					},
+					{
+						"name": "city_code",
+						"type": "String"
+					},
+					{
+						"name": "Customer_Name",
+						"type": "String"
+					},
+					{
+						"name": "Created_Modified_Date",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/DhanuAzureBlob')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/Stage_eshop')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -556,6 +618,60 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/Src_Eshop_Blob')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "DhanuAzureBlob",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "Customer.csv",
+						"folderPath": "eshop",
+						"container": "adfdemo"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "customer_Id",
+						"type": "String"
+					},
+					{
+						"name": "DOB",
+						"type": "String"
+					},
+					{
+						"name": "Gender",
+						"type": "String"
+					},
+					{
+						"name": "city_code",
+						"type": "String"
+					},
+					{
+						"name": "Customer_Name",
+						"type": "String"
+					},
+					{
+						"name": "Created_Modified_Date",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/DhanuAzureBlob')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/CopyAboveFileSize')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -748,112 +864,6 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/FSoutputBlob')]",
 				"[concat(variables('factoryId'), '/datasets/FSoutputBlob2')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/LogPipeline')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Stored procedure1",
-						"type": "SqlServerStoredProcedure",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"storedProcedureName": {
-								"value": "ALTER PROCEDURE [dbo].[USP_LOGTEST] (\n    @ADF_NAME VARCHAR(50),\n    @PIPE_NAME NVARCHAR(100),\n    @TRIGGER_ID NVARCHAR,\n    @RUN_ID VARCHAR(50),\n    @TRIGGERTIME DATETIME )\n    AS\n    BEGIN\n    INSERT INTO LOGTEST VALUES(@ADF_NAME,@PIPE_NAME,@TRIGGER_ID,@RUN_ID,@TRIGGERTIME)\n    END",
-								"type": "Expression"
-							},
-							"storedProcedureParameters": {
-								"ADF_NAME": {
-									"value": {
-										"value": "@pipeline().DataFactory",
-										"type": "Expression"
-									},
-									"type": "String"
-								},
-								"PIPE_NAME": {
-									"value": {
-										"value": "@pipeline().Pipeline",
-										"type": "Expression"
-									},
-									"type": "String"
-								},
-								"RUN_ID": {
-									"value": {
-										"value": "@pipeline().RunId",
-										"type": "Expression"
-									},
-									"type": "String"
-								},
-								"TRIGGER_ID": {
-									"value": {
-										"value": "@pipeline().TriggerId",
-										"type": "Expression"
-									},
-									"type": "String"
-								},
-								"TRIGGERTIME": {
-									"value": {
-										"value": "@pipeline().TriggerTime",
-										"type": "Expression"
-									},
-									"type": "DateTime"
-								}
-							}
-						},
-						"linkedServiceName": {
-							"referenceName": "OnPremDhanuSql",
-							"type": "LinkedServiceReference"
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {},
-					"cancelAfter": {}
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/OnPremDhanuSql')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/Souce_Movies')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "OnPremDhanuSql",
-					"type": "LinkedServiceReference"
-				},
-				"parameters": {
-					"TableName": {
-						"type": "String"
-					}
-				},
-				"annotations": [],
-				"type": "SqlServerTable",
-				"schema": [],
-				"typeProperties": {
-					"schema": "dbo",
-					"table": {
-						"value": "@dataset().TableName",
-						"type": "Expression"
-					}
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/OnPremDhanuSql')]"
 			]
 		}
 	]

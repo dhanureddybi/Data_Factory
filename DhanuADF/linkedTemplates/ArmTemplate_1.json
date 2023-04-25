@@ -13,6 +13,108 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/LogPipeline')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Stored procedure1",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": {
+								"value": "ALTER PROCEDURE [dbo].[USP_LOGTEST] (\n    @ADF_NAME VARCHAR(50),\n    @PIPE_NAME NVARCHAR(100),\n    @TRIGGER_ID NVARCHAR,\n    @RUN_ID VARCHAR(50),\n    @TRIGGERTIME DATETIME )\n    AS\n    BEGIN\n    INSERT INTO LOGTEST VALUES(@ADF_NAME,@PIPE_NAME,@TRIGGER_ID,@RUN_ID,@TRIGGERTIME)\n    END",
+								"type": "Expression"
+							},
+							"storedProcedureParameters": {
+								"ADF_NAME": {
+									"value": {
+										"value": "@pipeline().DataFactory",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"PIPE_NAME": {
+									"value": {
+										"value": "@pipeline().Pipeline",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"RUN_ID": {
+									"value": {
+										"value": "@pipeline().RunId",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"TRIGGER_ID": {
+									"value": {
+										"value": "@pipeline().TriggerId",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"TRIGGERTIME": {
+									"value": {
+										"value": "@pipeline().TriggerTime",
+										"type": "Expression"
+									},
+									"type": "DateTime"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "OnPremDhanuSql",
+							"type": "LinkedServiceReference"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Souce_Movies')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "OnPremDhanuSql",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"TableName": {
+						"type": "String"
+					}
+				},
+				"annotations": [],
+				"type": "SqlServerTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": {
+						"value": "@dataset().TableName",
+						"type": "Expression"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/Src_dbjoins_eshop')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -23,9 +125,50 @@
 				},
 				"annotations": [],
 				"type": "SqlServerTable",
-				"schema": [],
+				"schema": [
+					{
+						"name": "SOURCE",
+						"type": "varchar"
+					},
+					{
+						"name": "SOURCE_TABLE",
+						"type": "varchar"
+					},
+					{
+						"name": "DEST_TABLE",
+						"type": "varchar"
+					},
+					{
+						"name": "COLUMNS",
+						"type": "varchar"
+					},
+					{
+						"name": "WATERMARK_COLUMN",
+						"type": "varchar"
+					},
+					{
+						"name": "WATERMARK_VALUE",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "ENABLED",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "LOAD_FLAG",
+						"type": "varchar"
+					},
+					{
+						"name": "STATUS",
+						"type": "varchar"
+					}
+				],
 				"typeProperties": {
-					"schema": ""
+					"schema": "dbo",
+					"table": "CFG"
 				}
 			},
 			"dependsOn": []
@@ -424,52 +567,82 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/Incremental_Blob_to_AzureSql')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
+			"name": "[concat(parameters('factoryName'), '/AzureSql_CFG')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
-				"activities": [
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDatabase",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
 					{
-						"name": "Lookup1",
-						"type": "Lookup",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "SqlServerSource",
-								"sqlReaderQuery": "select * from dbo.cfg",
-								"queryTimeout": "02:00:00",
-								"partitionOption": "None"
-							},
-							"dataset": {
-								"referenceName": "cfg_table",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						}
+						"name": "SOURCE",
+						"type": "varchar"
+					},
+					{
+						"name": "SOURCE_TABLE",
+						"type": "varchar"
+					},
+					{
+						"name": "DEST_TABLE",
+						"type": "varchar"
+					},
+					{
+						"name": "COLUMNS",
+						"type": "varchar"
+					},
+					{
+						"name": "WATERMARK_COLUMN",
+						"type": "varchar"
+					},
+					{
+						"name": "WATERMARK_VALUE",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "ENABLED",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "LOAD_FLAG",
+						"type": "varchar"
+					},
+					{
+						"name": "STATUS",
+						"type": "varchar"
 					}
 				],
-				"policy": {
-					"elapsedTimeMetric": {},
-					"cancelAfter": {}
-				},
-				"variables": {
-					"num": {
-						"type": "String"
-					}
-				},
-				"annotations": []
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "CFG"
+				}
 			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/cfg_table')]"
-			]
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Des_Eshop_ASql')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDatabase",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "Customer"
+				}
+			},
+			"dependsOn": []
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/Log_PipelineErrors')]",
@@ -929,7 +1102,8 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/TablesList')]"
+				"[concat(variables('factoryId'), '/datasets/TablesList')]",
+				"[concat(variables('factoryId'), '/datasets/Souce_Movies')]"
 			]
 		},
 		{
@@ -985,347 +1159,6 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/dataflows/RemoveDuplicates')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/incremental_Onprem_to_Blob')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "LookupCFGTable",
-						"type": "Lookup",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "SqlServerSource",
-								"sqlReaderQuery": "SELECT * FROM DBO.CFG WHERE ENABLED = 1",
-								"queryTimeout": "02:00:00",
-								"partitionOption": "None"
-							},
-							"dataset": {
-								"referenceName": "cfg_table",
-								"type": "DatasetReference",
-								"parameters": {}
-							},
-							"firstRowOnly": false
-						}
-					},
-					{
-						"name": "FilterSQLDB",
-						"type": "Filter",
-						"dependsOn": [
-							{
-								"activity": "LookupCFGTable",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"items": {
-								"value": "@activity('LookupCFGTable').output.value",
-								"type": "Expression"
-							},
-							"condition": {
-								"value": "@equals(item().SOURCE,'SQLDB')",
-								"type": "Expression"
-							}
-						}
-					},
-					{
-						"name": "ForEach1",
-						"type": "ForEach",
-						"dependsOn": [
-							{
-								"activity": "FilterSQLDB",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"items": {
-								"value": "@activity('FilterSQLDB').output.Value\n\n",
-								"type": "Expression"
-							},
-							"isSequential": true,
-							"activities": [
-								{
-									"name": "If Condition1",
-									"type": "IfCondition",
-									"dependsOn": [],
-									"userProperties": [],
-									"typeProperties": {
-										"expression": {
-											"value": "@bool(equals(item().LOAD_FLAG,'Incremental'))",
-											"type": "Expression"
-										},
-										"ifFalseActivities": [
-											{
-												"name": "GetFileIFExists",
-												"type": "Lookup",
-												"dependsOn": [],
-												"policy": {
-													"timeout": "0.12:00:00",
-													"retry": 0,
-													"retryIntervalInSeconds": 30,
-													"secureOutput": false,
-													"secureInput": false
-												},
-												"userProperties": [],
-												"typeProperties": {
-													"source": {
-														"type": "SqlServerSource",
-														"sqlReaderQuery": "SELECT WATERMARK_VALUE FROM DBO.CFG WHERE SOURCE_TABLE LIKE '@{item().SOURCE_TABLE}'",
-														"queryTimeout": "02:00:00",
-														"partitionOption": "None"
-													},
-													"dataset": {
-														"referenceName": "Src_dbjoins_eshop",
-														"type": "DatasetReference",
-														"parameters": {}
-													}
-												}
-											},
-											{
-												"name": "Get Last Mode Date",
-												"type": "GetMetadata",
-												"dependsOn": [
-													{
-														"activity": "GetFileIFExists",
-														"dependencyConditions": [
-															"Succeeded"
-														]
-													}
-												],
-												"policy": {
-													"timeout": "0.12:00:00",
-													"retry": 0,
-													"retryIntervalInSeconds": 30,
-													"secureOutput": false,
-													"secureInput": false
-												},
-												"userProperties": [],
-												"typeProperties": {
-													"dataset": {
-														"referenceName": "Stage_eshop",
-														"type": "DatasetReference",
-														"parameters": {
-															"File_Name": {
-																"value": "@activity('FilterSQLDB').output.value.DEST_TABLE",
-																"type": "Expression"
-															}
-														}
-													},
-													"fieldList": [
-														"lastModified"
-													],
-													"storeSettings": {
-														"type": "AzureBlobStorageReadSettings",
-														"enablePartitionDiscovery": false
-													},
-													"formatSettings": {
-														"type": "DelimitedTextReadSettings"
-													}
-												}
-											},
-											{
-												"name": "Copy data1",
-												"type": "Copy",
-												"dependsOn": [
-													{
-														"activity": "Get Last Mode Date",
-														"dependencyConditions": [
-															"Succeeded"
-														]
-													}
-												],
-												"policy": {
-													"timeout": "0.12:00:00",
-													"retry": 0,
-													"retryIntervalInSeconds": 30,
-													"secureOutput": false,
-													"secureInput": false
-												},
-												"userProperties": [],
-												"typeProperties": {
-													"source": {
-														"type": "SqlServerSource",
-														"sqlReaderQuery": "SELECT * FROM @activity('GetFileIFExists').output.firstRow.SOURCE_TABLE",
-														"queryTimeout": "02:00:00",
-														"partitionOption": "None"
-													},
-													"sink": {
-														"type": "DelimitedTextSink",
-														"storeSettings": {
-															"type": "AzureBlobStorageWriteSettings"
-														},
-														"formatSettings": {
-															"type": "DelimitedTextWriteSettings",
-															"quoteAllText": true,
-															"fileExtension": ".txt"
-														}
-													},
-													"enableStaging": false,
-													"translator": {
-														"type": "TabularTranslator",
-														"typeConversion": true,
-														"typeConversionSettings": {
-															"allowDataTruncation": true,
-															"treatBooleanAsNumber": false
-														}
-													}
-												},
-												"inputs": [
-													{
-														"referenceName": "Src_dbjoins_eshop",
-														"type": "DatasetReference",
-														"parameters": {}
-													}
-												],
-												"outputs": [
-													{
-														"referenceName": "Stage_eshop",
-														"type": "DatasetReference",
-														"parameters": {
-															"File_Name": {
-																"value": "@activity('FilterSQLDB').output.value.DEST_TABLE",
-																"type": "Expression"
-															}
-														}
-													}
-												]
-											}
-										],
-										"ifTrueActivities": [
-											{
-												"name": "GetDateFromSrcTable",
-												"type": "Lookup",
-												"dependsOn": [],
-												"policy": {
-													"timeout": "0.12:00:00",
-													"retry": 0,
-													"retryIntervalInSeconds": 30,
-													"secureOutput": false,
-													"secureInput": false
-												},
-												"userProperties": [],
-												"typeProperties": {
-													"source": {
-														"type": "SqlServerSource",
-														"sqlReaderQuery": {
-															"value": "SELECT WATERMARK_VALUE FROM DBO.CFG WHERE SOURCE_TABLE LIKE '@{item().SOURCE_TABLE}'",
-															"type": "Expression"
-														},
-														"queryTimeout": "02:00:00",
-														"partitionOption": "None"
-													},
-													"dataset": {
-														"referenceName": "cfg_table",
-														"type": "DatasetReference",
-														"parameters": {}
-													},
-													"firstRowOnly": true
-												}
-											},
-											{
-												"name": "CopyData",
-												"type": "Copy",
-												"dependsOn": [
-													{
-														"activity": "GetDateFromSrcTable",
-														"dependencyConditions": [
-															"Succeeded"
-														]
-													}
-												],
-												"policy": {
-													"timeout": "0.12:00:00",
-													"retry": 0,
-													"retryIntervalInSeconds": 30,
-													"secureOutput": false,
-													"secureInput": false
-												},
-												"userProperties": [],
-												"typeProperties": {
-													"source": {
-														"type": "SqlServerSource",
-														"sqlReaderQuery": {
-															"value": "SELECT * FROM @{item().SOURCE_TABLE} WHERE CONVERT(datetime,@{item().WATERMARK_COLUMN},105) > CONVERT(datetime,substring(REPLACE('@{activity('GetDateFromSrcTable').output.firstRow.WATERMARK_VALUE}','T',' '),1,19),120)",
-															"type": "Expression"
-														},
-														"queryTimeout": "02:00:00",
-														"partitionOption": "None"
-													},
-													"sink": {
-														"type": "DelimitedTextSink",
-														"storeSettings": {
-															"type": "AzureBlobStorageWriteSettings"
-														},
-														"formatSettings": {
-															"type": "DelimitedTextWriteSettings",
-															"quoteAllText": true,
-															"fileExtension": ".csv"
-														}
-													},
-													"enableStaging": false,
-													"translator": {
-														"type": "TabularTranslator",
-														"typeConversion": true,
-														"typeConversionSettings": {
-															"allowDataTruncation": true,
-															"treatBooleanAsNumber": false
-														}
-													}
-												},
-												"inputs": [
-													{
-														"referenceName": "Src_dbjoins_eshop",
-														"type": "DatasetReference",
-														"parameters": {}
-													}
-												],
-												"outputs": [
-													{
-														"referenceName": "Stage_eshop",
-														"type": "DatasetReference",
-														"parameters": {
-															"File_Name": {
-																"value": "@activity('FilterSQLDB').output.value.DEST_TABLE",
-																"type": "Expression"
-															}
-														}
-													}
-												]
-											}
-										]
-									}
-								}
-							]
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {},
-					"cancelAfter": {}
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/cfg_table')]",
-				"[concat(variables('factoryId'), '/datasets/Src_dbjoins_eshop')]"
 			]
 		},
 		{
@@ -1415,51 +1248,146 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/HandleErrorRows')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
+			"name": "[concat(parameters('factoryName'), '/Incre_OnpremToBlob_RecordMaxDate')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
 			"properties": {
-				"activities": [
-					{
-						"name": "HandleErrorRows",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "HandleErrorRows",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"errorrows": {},
-									"GoodRows": {},
-									"badRows": {}
-								}
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "Src_StageEshop_Blob",
+								"type": "DatasetReference"
 							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
+							"name": "source1"
 						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {},
-					"cancelAfter": {}
-				},
-				"annotations": []
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "AzureSql_CFG",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "aggregate1"
+						},
+						{
+							"name": "alterRow1"
+						},
+						{
+							"name": "derivedColumn1"
+						}
+					],
+					"scriptLines": [
+						"parameters{",
+						"     SOURCE_TABLE as string,",
+						"     WATERMARK_FIELD as string",
+						"}",
+						"source(output(",
+						"          customer_Id as string,",
+						"          DOB as string,",
+						"          Gender as string,",
+						"          city_code as string,",
+						"          Customer_Name as string,",
+						"          Created_Modified_Date as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     partitionBy('hash', 1)) ~> source1",
+						"source1 aggregate(Max_Created_Modified_Date = iif($SOURCE_TABLE == 'Customer.csv', \r",
+						"    max(toTimestamp(toString(byName($WATERMARK_FIELD)),'dd-MM-yyyy HH:mm')), \r",
+						"    max(toTimestamp(toString(byName($WATERMARK_FIELD)),'dd-MM-yyyy HH:mm')))) ~> aggregate1",
+						"derivedColumn1 alterRow(updateIf(isNull(Max_Created_Modified_Date)==false())) ~> alterRow1",
+						"aggregate1 derive(DEST_TABLE = $SOURCE_TABLE) ~> derivedColumn1",
+						"alterRow1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          SOURCE as string,",
+						"          SOURCE_TABLE as string,",
+						"          DEST_TABLE as string,",
+						"          COLUMNS as string,",
+						"          WATERMARK_COLUMN as string,",
+						"          WATERMARK_VALUE as timestamp,",
+						"          ENABLED as integer,",
+						"          LOAD_FLAG as string,",
+						"          STATUS as string",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:false,",
+						"     updateable:true,",
+						"     upsertable:false,",
+						"     keys:['DEST_TABLE'],",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
+					]
+				}
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/HandleErrorRows')]"
+				"[concat(variables('factoryId'), '/datasets/AzureSql_CFG')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/BlobToAzureSQLshop')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "Src_Eshop_Blob",
+								"type": "DatasetReference"
+							},
+							"name": "srcEshop"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "Des_Eshop_ASql",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [],
+					"scriptLines": [
+						"source(output(",
+						"          customer_Id as integer,",
+						"          DOB as date,",
+						"          Gender as string,",
+						"          city_code as string,",
+						"          Customer_Name as string,",
+						"          Created_Modified_Date as timestamp",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> srcEshop",
+						"srcEshop sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     partitionBy('hash', 1)) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/Des_Eshop_ASql')]"
 			]
 		}
 	]
