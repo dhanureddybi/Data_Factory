@@ -96,7 +96,10 @@
 										"typeProperties": {
 											"source": {
 												"type": "SqlServerSource",
-												"sqlReaderQuery": "SELECT WATERMARK_VALUE FROM DBO.CFG WHERE SOURCE_TABLE LIKE '@{item().SOURCE_TABLE}'",
+												"sqlReaderQuery": {
+													"value": "SELECT WATERMARK_VALUE FROM DBO.CFG WHERE SOURCE_TABLE LIKE '@{item().SOURCE_TABLE}'",
+													"type": "Expression"
+												},
 												"queryTimeout": "02:00:00",
 												"partitionOption": "None"
 											},
@@ -271,6 +274,47 @@
 												}
 											}
 										]
+									},
+									{
+										"name": "Incre_OnpremToBlob_RecordMaxDate",
+										"type": "ExecuteDataFlow",
+										"dependsOn": [
+											{
+												"activity": "CopyData",
+												"dependencyConditions": [
+													"Succeeded"
+												]
+											}
+										],
+										"policy": {
+											"timeout": "0.12:00:00",
+											"retry": 0,
+											"retryIntervalInSeconds": 30,
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"typeProperties": {
+											"dataflow": {
+												"referenceName": "Incre_OnpremToBlob_RecordMaxDate",
+												"type": "DataFlowReference",
+												"parameters": {
+													"SOURCE_TABLE": {
+														"value": "'@{item().DEST_TABLE}'",
+														"type": "Expression"
+													},
+													"WATERMARK_FIELD": {
+														"value": "'@{item().WATERMARK_COLUMN}'",
+														"type": "Expression"
+													}
+												}
+											},
+											"compute": {
+												"coreCount": 8,
+												"computeType": "General"
+											},
+											"traceLevel": "Fine"
+										}
 									}
 								]
 							}
