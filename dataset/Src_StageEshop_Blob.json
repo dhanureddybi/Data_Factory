@@ -15,10 +15,7 @@
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobStorageLocation",
-				"fileName": {
-					"value": "@dataset().FileName",
-					"type": "Expression"
-				},
+				"fileName": "Customer.csv",
 				"folderPath": "Stage_eshop",
 				"container": "adfdemo"
 			},
