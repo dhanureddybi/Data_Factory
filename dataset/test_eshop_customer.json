@@ -1,0 +1,24 @@
+{
+	"name": "test_eshop_customer",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "DhanuAzureBlob",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "test_customer.csv",
+				"folderPath": "eshop",
+				"container": "adfdemo"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": []
+	}
+}
