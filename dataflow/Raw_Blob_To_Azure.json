@@ -1,0 +1,39 @@
+{
+	"name": "Raw_Blob_To_Azure",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "BlobSrc_Eshop",
+						"type": "DatasetReference"
+					},
+					"name": "StageEshop"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          customer_Id as string,",
+				"          DOB as string,",
+				"          Gender as string,",
+				"          city_code as string,",
+				"          Customer_Name as string,",
+				"          Created_Modified_Date as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> StageEshop",
+				"StageEshop derive(customer_Id_CAST = toInteger(customer_Id),",
+				"          DOB_CAST = toDate(DOB, 'dd-MM-yyyy'),",
+				"          Created_Modified_Date_CAST = toTimestamp(Created_Modified_Date, 'dd-MM-yyyy HH:mm')) ~> derivedColumn1"
+			]
+		}
+	}
+}
